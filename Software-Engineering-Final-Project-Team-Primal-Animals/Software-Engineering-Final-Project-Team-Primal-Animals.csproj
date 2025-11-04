@@ -7,4 +7,8 @@
     <RootNamespace>Software_Engineering_Final_Project_Team_Primal_Animals</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\" />
+  </ItemGroup>
+
 </Project>
