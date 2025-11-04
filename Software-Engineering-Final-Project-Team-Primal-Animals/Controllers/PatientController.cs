@@ -6,10 +6,10 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
 {
     public class PatientController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbcontext _context;
         private readonly IHeatMapService _heatmapService;
 
-        public PatientController(ApplicationDbContext context, IHeatMapService heatmapService)
+        public PatientController(ApplicationDbcontext context, IHeatMapService heatmapService)
         {
             _context = context;
             _heatmapService = heatmapService;
