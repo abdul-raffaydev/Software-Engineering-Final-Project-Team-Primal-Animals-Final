@@ -1,8 +1,41 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clinician Application</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Navigation bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark " style="background-color: #3176C2;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Clinician Application</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+           <div class="collapse navbar-collapse" id="navbarNav" style="background-color: #3176C2;">
+  <ul class="navbar-nav ms-auto">
+    <li class="nav-item"><a class="nav-link text-white" href="/">Home</a></li>
+    <li class="nav-item">
+        <a class="nav-link text-white" asp-controller="Clinician" asp-action="PatientDetails">
+            Patient Details
+        </a>    
+    </li>
+    <li class="nav-item"><a class="nav-link text-white" href="/">Dashboard</a></li>
+  </ul>
 </div>
+
+        </div>
+    </nav>
+
+    <!-- Welcome content -->
+    <div class="container mt-5 text-center">
+        
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
