@@ -6,4 +6,9 @@ public class ClinicianController : Controller
     {
         return View();
     }
+
+    public IActionResult ClinicianDashboard()
+    {
+        return View();
+    }
 }
