@@ -2,17 +2,15 @@
 {
     public class CommentThread
     {
-        public int CommentThreadId { get; set; }
+        public int Comment_ID { get; set; }
 
-        public int PatientId { get; set; }
-        public Patient Patient { get; set; }
+        public int User_ID { get; set; }   // Patient user ID
+        public User User { get; set; }
 
-        public DateTime FrameTimestamp { get; set; }
+        public int Data_ID { get; set; }
+        public SensorData SensorData { get; set; }
 
-        public string CommentText { get; set; }
-        public DateTime CreatedAt { get; set; }
-
-        public string ClinicianReply { get; set; }
-        public DateTime? ClinicianReplyAt { get; set; }
+        public string Content { get; set; }
+        public DateTime Comment_Time { get; set; }
     }
 }
