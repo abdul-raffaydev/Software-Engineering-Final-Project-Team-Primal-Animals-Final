@@ -1,52 +1,73 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Software_Engineering_Final_Project_Team_Primal_Animals.Data;
+using Software_Engineering_Final_Project_Team_Primal_Animals.Models;
+using Software_Engineering_Final_Project_Team_Primal_Animals.ViewModels;
+using Software_Engineering_Final_Project_Team_Primal_Animals.InputModels;
+
 
 namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
 {
     public class PatientController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly IHeatMapService _heatmapService;
 
-        public PatientController(ApplicationDbContext context, IHeatMapService heatmapService)
+        public PatientController(ApplicationDbContext context)
         {
             _context = context;
-            _heatmapService = heatmapService;
         }
 
-        [Authorize(Roles = "Patient")]
+        [HttpGet]
         public async Task<IActionResult> Dashboard()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            // Logged-in user's identity ID
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
             var patient = await _context.Patients
-                  .Include(x => x.PressureFrames)
-                  .FirstOrDefaultAsync(x => x.UserId == userId);
+                .Include(p => p.SensorData)
+                .FirstOrDefaultAsync(p => p.User_ID == userId);
 
-            var latestFrame = patient.PressureFrames.OrderByDescending(x => x.Timestamp).First();
+            if (patient == null)
+                return NotFound();
 
-            var peakPressureIndex = _heatmapService.GetPeakPressureIndex(latestFrame);
-            var contactAreaPercentage = _heatmapService.GetContactAreaPercentage(latestFrame);
+            var latestFrame = patient.SensorData
+                .OrderByDescending(d => d.TimeStamp)
+                .FirstOrDefault();
+
+            if (latestFrame == null)
+                return View(new PatientDashboardVM());
 
             var vm = new PatientDashboardVM
             {
-                HeatMap = latestFrame.FrameData,
-                PeakPressure = peakPressureIndex,
-                ContactArea = contactAreaPercentage,
-                EmergencyContactName = patient.EmergencyContactName,
-                EmergencyContactNumber = patient.EmergencyContactNumber
+                PressureMatrix = latestFrame.Pressure_Matrix,
+                PeakPressure = latestFrame.PeakPressureIndex,
+                ContactArea = latestFrame.Contact_Area,
+                EmergencyName = patient.Emergency_contactName,
+                EmergencyNumber = patient.Emergency_ContactNumber,
+                Timestamp = latestFrame.TimeStamp
             };
 
             return View(vm);
         }
 
         [HttpPost]
-        [Authorize(Roles = "Patient")]
-        public async Task<IActionResult> PostComment(CommentInput model)
+        public async Task<IActionResult> PostComment(CommentInput input)
         {
-            // saves user comment associated to timestamp frame
-            // this supports clinician thread reply later
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var comment = new CommentThread
+            {
+                User_ID = userId,
+                Data_ID = input.Data_ID,
+                Content = input.CommentText,
+                Comment_Time = DateTime.Now
+            };
+
+            _context.CommentThreads.Add(comment);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Dashboard");
         }
     }
-}
 }

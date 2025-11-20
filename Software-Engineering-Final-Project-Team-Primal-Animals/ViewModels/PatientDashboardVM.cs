@@ -1,12 +1,14 @@
-﻿public class PatientDashboardVM
+﻿namespace Software_Engineering_Final_Project_Team_Primal_Animals.ViewModels;    
 {
-    public string HeatMap { get; set; }
+public class PatientDashboardVM
+{
+    public string PressureMatrix { get; set; }
     public int PeakPressure { get; set; }
-    public double ContactArea { get; set; }
+    public string ContactArea { get; set; }
 
-    public string EmergencyContactName { get; set; }
-    public string EmergencyContactNumber { get; set; }
+    public string EmergencyName { get; set; }
+    public int EmergencyNumber { get; set; }
 
     public DateTime Timestamp { get; set; }
 }
-
+}
