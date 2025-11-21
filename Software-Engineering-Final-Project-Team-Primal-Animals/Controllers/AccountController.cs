@@ -53,7 +53,7 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             await _signInManager.SignOutAsync();
             return RedirectToAction("Login");
         }
-    [HttpGet]
+        [HttpGet]
         public IActionResult Register()
         {
             return View();
@@ -81,6 +81,62 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             // Redirect after registration
             return RedirectToAction("Login");
         }
+    [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                ViewBag.Error = "User not found.";
+                return View();
+            }
+
+            // Generate reset token
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // Display the token to the user (development only)
+            ViewBag.Token = token;
+            ViewBag.UserId = user.Id;
+
+            return View("ForgotPasswordConfirmation");
+        }
+        [HttpGet]
+        public IActionResult ResetPassword(string userId, string token)
+        {
+            ViewBag.UserId = userId;
+            ViewBag.Token = token;
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string userId, string token, string newPassword, string confirmPassword)
+        {
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Error = "Passwords do not match.";
+                return View();
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                ViewBag.Error = "User not found.";
+                return View();
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+            if (result.Succeeded)
+                return RedirectToAction("Login");
+
+            ViewBag.Error = "Invalid or expired token.";
+            return View();
+        }
+
     }
 }
 

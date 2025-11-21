@@ -1,8 +1,131 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Graphene Trace – Smart Pressure Monitoring";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- ===== HERO SECTION ===== -->
+<section class="py-5 text-center" style="background: linear-gradient(90deg, #0d6efd, #6610f2); color: white;">
+    <div class="container">
+        <h1 class="fw-bold mb-3">Welcome to Graphene Trace</h1>
+        <p class="lead mb-4">
+            Smart real-time pressure monitoring system to prevent pressure ulcers
+            using graphene-based sensor technology.
+        </p>
+
+        <div class="mt-4">
+            <a asp-controller="Account" asp-action="Login" class="btn btn-light btn-lg me-2">Login</a>
+            <a asp-controller="Account" asp-action="Register" class="btn btn-outline-light btn-lg">Register</a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== INTERACTIVE HEATMAP DEMO ===== -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-4 text-primary">Live Heatmap Simulation</h2>
+        <p class="text-center text-muted mb-4">
+            This interactive demo represents how the seating pressure heatmap updates in real time.
+        </p>
+
+        <div class="d-flex justify-content-center">
+            <div id="demo-heatmap"
+                 style="display: grid;
+                        grid-template-columns: repeat(16, 1fr);
+                        width: 320px;
+                        height: 320px;
+                        gap: 0;">
+            </div>
+        </div>
+
+        <script>
+            const heatDemo = document.getElementById("demo-heatmap");
+
+            function generateHeatmap() {
+                heatDemo.innerHTML = "";
+                for (let i = 0; i < 256; i++) {
+                    const v = Math.floor(Math.random() * 255);
+                    const cell = document.createElement("div");
+                    cell.style.backgroundColor = `rgb(${v}, 20, ${255 - v})`;
+                    cell.style.width = "100%";
+                    cell.style.height = "100%";
+                    heatDemo.appendChild(cell);
+                }
+            }
+
+            generateHeatmap();
+            setInterval(generateHeatmap, 800); // update every 0.8s
+        </script>
+    </div>
+</section>
+
+<!-- ===== PRESSURE ULCER RISK INFO ===== -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-4 text-danger">Understanding Pressure Ulcers</h2>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Pressure_ulcer_stages.png/640px-Pressure_ulcer_stages.png"
+                     class="img-fluid rounded shadow" alt="Pressure Ulcer Stages" />
+            </div>
+
+            <div class="col-md-6">
+                <h4 class="fw-bold mb-3">What Causes Pressure Ulcers?</h4>
+                <p class="text-muted">
+                    Pressure ulcers occur when sustained pressure reduces blood flow to the skin.
+                    Individuals using wheelchairs or with limited mobility are at high risk.
+                </p>
+
+                <h5 class="fw-bold mt-4">Graphene Trace Helps By:</h5>
+                <ul class="list-group">
+                    <li class="list-group-item">✔ Detecting high-risk pressure zones instantly</li>
+                    <li class="list-group-item">✔ Alerting patients to reposition</li>
+                    <li class="list-group-item">✔ Providing clinicians with accurate heatmaps</li>
+                    <li class="list-group-item">✔ Tracking long-term pressure patterns</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FEATURES SECTION ===== -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-4">Key Features</h2>
+
+        <div class="row g-4">
+
+            <div class="col-md-4">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-body text-center">
+                        <h4 class="fw-bold text-primary">Real-Time Monitoring</h4>
+                        <p class="text-muted">Graphene sensors capture high-resolution pressure data instantly.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-body text-center">
+                        <h4 class="fw-bold text-success">AI Risk Prediction</h4>
+                        <p class="text-muted">Machine learning identifies dangerous pressure patterns early.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-body text-center">
+                        <h4 class="fw-bold text-danger">Clinical Insights</h4>
+                        <p class="text-muted">Clinicians access heatmaps, comments, and patient risk levels.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="text-center py-4 bg-dark text-white mt-5">
+    Graphene Trace · Medical Pressure Monitoring System — 2025
+</footer>
