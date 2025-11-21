@@ -10,7 +10,7 @@
 
     // FK → User
     public int User_ID { get; set; }
-    public User User { get; set; }
+    public AppUser User { get; set; }
 
     // Relationships
     public ICollection<SensorData> SensorData { get; set; }

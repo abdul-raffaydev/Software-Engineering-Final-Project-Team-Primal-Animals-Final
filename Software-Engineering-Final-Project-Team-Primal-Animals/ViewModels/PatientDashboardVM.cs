@@ -1,5 +1,5 @@
 ﻿namespace Software_Engineering_Final_Project_Team_Primal_Animals.ViewModels;    
-{
+
 public class PatientDashboardVM
 {
     public string PressureMatrix { get; set; }
@@ -11,4 +11,4 @@ public class PatientDashboardVM
 
     public DateTime Timestamp { get; set; }
 }
-}
+

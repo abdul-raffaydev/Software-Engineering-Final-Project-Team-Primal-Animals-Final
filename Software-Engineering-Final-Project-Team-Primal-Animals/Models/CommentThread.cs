@@ -5,7 +5,7 @@
         public int Comment_ID { get; set; }
 
         public int User_ID { get; set; }   // Patient user ID
-        public User User { get; set; }
+        public AppUser User { get; set; }
 
         public int Data_ID { get; set; }
         public SensorData SensorData { get; set; }

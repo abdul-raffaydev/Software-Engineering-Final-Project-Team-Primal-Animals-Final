@@ -1,6 +1,6 @@
 ﻿namespace Software_Engineering_Final_Project_Team_Primal_Animals.Models
 {
-    public class User
+    public class AppUser
     {
         public int User_ID { get; set; }
         public string User_Email { get; set; }
