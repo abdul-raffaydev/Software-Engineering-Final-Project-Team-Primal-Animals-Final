@@ -8,7 +8,7 @@ public class PatientDashboardVM
 
     public string EmergencyName { get; set; }
     public int EmergencyNumber { get; set; }
-
+    public int DataId { get; set; }
     public DateTime Timestamp { get; set; }
 }
 

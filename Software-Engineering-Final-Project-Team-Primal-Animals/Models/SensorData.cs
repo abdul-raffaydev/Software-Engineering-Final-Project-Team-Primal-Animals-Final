@@ -1,9 +1,14 @@
-﻿namespace Software_Engineering_Final_Project_Team_Primal_Animals.Models
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace Software_Engineering_Final_Project_Team_Primal_Animals.Models
 {
     public class SensorData
     {
+        [Key] 
         public int Data_Id { get; set; }
 
+        // Foreign key to Patient
         public int Patient_ID { get; set; }
         public Patient Patient { get; set; }
 

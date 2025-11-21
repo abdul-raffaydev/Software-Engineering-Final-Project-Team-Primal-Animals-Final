@@ -1,0 +1,89 @@
+﻿@model Software_Engineering_Final_Project_Team_Primal_Animals.ViewModels.PatientDashboardVM
+
+<div class="container mt-4">
+
+    <h2 class="mb-4 text-primary fw-bold">Patient Dashboard</h2>
+
+    <div class="row g-4">
+
+        <!-- METRICS PANEL -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-primary">Pressure Metrics</h5>
+                    <hr />
+
+                    <p><strong>Peak Pressure:</strong> @Model.PeakPressure</p>
+                    <p><strong>Contact Area:</strong> @Model.ContactArea</p>
+                    <p><strong>Timestamp:</strong> @Model.Timestamp</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- HEATMAP PANEL -->
+        <script>
+            const heatmap = document.getElementById("heatmap");
+
+            // The matrix string from backend
+            let matrix = "@Model.PressureMatrix";
+
+            // Example backend format: "10, 20, 30, ...,,,"
+            let values = matrix.split(',').map(Number);
+
+            // Ensure correct size (32x32 = 1024)
+            while (values.length < 1024) values.push(0);
+
+            values.forEach(v => {
+                const cell = document.createElement("div");
+                cell.style.width = "100%";
+                cell.style.height = "100%";
+
+                // Color scale (blue → red)
+                const r = v;
+                const g = 0;
+                const b = 255 - v;
+
+                cell.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+
+                heatmap.appendChild(cell);
+            });
+        </script>
+
+
+                </div>
+            </div>
+        </div>
+
+
+    <!-- COMMENT BOX -->
+    <div class="card shadow-sm border-0 rounded-4 mt-4">
+        <div class="card-body">
+            <h5 class="fw-bold text-primary">Leave a Comment</h5>
+            <hr />
+
+            <form asp-controller="Patient" asp-action="PostComment" method="post">
+                <input type="hidden" name="Data_ID" value="@Model.DataId" />
+
+                <div class="mb-3">
+                    <textarea class="form-control" name="CommentText" rows="3" placeholder="Write your comment..."></textarea>
+                </div>
+
+                <button class="btn btn-primary px-4">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- EMERGENCY PANEL -->
+    <div class="card shadow-sm border-0 rounded-4 mt-4 mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold text-danger">Emergency Contact</h5>
+            <hr />
+
+            <p><strong>Name:</strong> @Model.EmergencyName</p>
+            <p><strong>Phone:</strong> @Model.EmergencyNumber</p>
+
+            <a href="tel:@Model.EmergencyNumber" class="btn btn-danger">Call Now</a>
+        </div>
+    </div>
+
+</div>
