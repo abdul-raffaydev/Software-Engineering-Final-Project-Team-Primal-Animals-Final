@@ -10,5 +10,8 @@ public class PatientDashboardVM
     public int EmergencyNumber { get; set; }
     public int DataId { get; set; }
     public DateTime Timestamp { get; set; }
+    public string AlertMessage { get; set; }
+    public bool IsHighRisk { get; set; }
+    public bool EscalatedAlert { get; set; }
 }
 

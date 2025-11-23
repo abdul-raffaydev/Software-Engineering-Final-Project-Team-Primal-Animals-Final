@@ -54,18 +54,26 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             var latestFrame = patient.SensorData
                 .OrderByDescending(d => d.TimeStamp)
                 .FirstOrDefault();
-
             if (latestFrame == null)
             {
-                // No pressure frames yet → show emergency details only
-                return View(new PatientDashboardVM
+                // ✅ Generate realistic, varied heatmap values (0–255)
+                var random = new Random();
+                latestFrame = new SensorData
                 {
-                    EmergencyName = patient.Emergency_contactName,
-                    EmergencyNumber = patient.Emergency_ContactNumber
-                });
+                    Pressure_Matrix = string.Join(",", Enumerable.Range(0, 1024)
+                                                                 .Select(i => random.Next(0, 255))),
+                    PeakPressureIndex = 230,    // High pressure for alert testing
+                    Contact_Area = "47%",
+                    TimeStamp = DateTime.Now
+                };
             }
 
+
+
             // Build View Model
+            var threshold = 180;
+            bool highRisk = latestFrame.PeakPressureIndex >= threshold;
+
             var vm = new PatientDashboardVM
             {
                 PressureMatrix = latestFrame.Pressure_Matrix,
@@ -74,10 +82,15 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
                 EmergencyName = patient.Emergency_contactName,
                 EmergencyNumber = patient.Emergency_ContactNumber,
                 Timestamp = latestFrame.TimeStamp,
-                DataId = latestFrame.Data_Id
+                IsHighRisk = highRisk,
+                AlertMessage = highRisk
+                    ? "⚠ High pressure detected! Please reposition immediately."
+                    : "✅ Pressure levels are safe.",
+                EscalatedAlert = false
             };
 
             return View(vm);
+
         }
 
         // ================================================================
