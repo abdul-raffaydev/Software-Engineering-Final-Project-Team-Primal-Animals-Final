@@ -2,6 +2,7 @@
 
 <div class="container mt-5">
 
+    <!-- TITLE -->
     <h1 class="fw-bold text-primary mb-4">Patient Dashboard</h1>
 
     <!-- ALERT MESSAGE -->
@@ -12,44 +13,66 @@
         </div>
     }
 
-    <!-- HEATMAP CANVAS -->
-    <div id="heatmap-container" class="mb-4 p-3 rounded-3 shadow-sm" style="background: #fafafa; border: 3px solid #ddd;">
-        <canvas id="heatmapCanvas" width="480" height="480" style="width:100%;"></canvas>
+    <!-- HEATMAP GRAPH -->
+    <div id="heatmap-container" class="mb-4 p-3 rounded-3 shadow-sm"
+         style="background: #fafafa; border: 3px solid #ddd;">
 
-        <div class="d-flex justify-content-between mt-2 fw-bold">
-            <span style="color:blue;">Low Pressure</span>
-            <span style="color:red;">High Pressure</span>
+        <canvas id="heatmapCanvas" width="480" height="480" style="width:100%; border-radius:10px;"></canvas>
+
+        <div class="mt-3 text-center fw-bold">
+            <span style="color: blue;">Low</span> →
+            <span style="color: green;">Moderate</span> →
+            <span style="color: yellow;">High</span> →
+            <span style="color: red;">Critical</span>
         </div>
     </div>
 
+    <!-- HEATMAP SCRIPT -->
     <script>
-        // PROFESSIONAL HEATMAP RENDERING
         const matrixString = "@Model.PressureMatrix";
+
         if (matrixString && matrixString.length > 0) {
 
             const values = matrixString.split(',')
-                                       .map(v => parseInt(v.trim()))
-                                       .filter(v => !isNaN(v));
+                .map(v => parseInt(v.trim()))
+                .filter(v => !isNaN(v));
 
             const canvas = document.getElementById("heatmapCanvas");
             const ctx = canvas.getContext("2d");
 
-            const gridSize = 32;
-            const cellSize = canvas.width / gridSize;
+            const grid = 32;
+            const cell = canvas.width / grid;
+
+            // ✅ Smooth heatmap effect
+            ctx.filter = "blur(6px)";
 
             values.forEach((v, i) => {
-                const x = (i % gridSize) * cellSize;
-                const y = Math.floor(i / gridSize) * cellSize;
+                const x = (i % grid) * cell;
+                const y = Math.floor(i / grid) * cell;
 
-                // Smooth gradient (Blue → Green → Yellow → Red)
                 const t = v / 255;
+
+                // ✅ Professional colormap (Blue → Green → Yellow → Red)
                 const r = Math.floor(255 * t);
                 const g = Math.floor(255 * (1 - Math.abs(t - 0.5) * 2));
                 const b = Math.floor(255 * (1 - t));
 
                 ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-                ctx.fillRect(x, y, cellSize, cellSize);
+                ctx.fillRect(x, y, cell, cell);
             });
+
+            // ✅ Highlight HOTTEST POINT
+            const max = Math.max(...values);
+            const maxIndex = values.indexOf(max);
+            const peakX = (maxIndex % grid) * cell + cell / 2;
+            const peakY = Math.floor(maxIndex / grid) * cell + cell / 2;
+
+            ctx.filter = "none";
+            ctx.beginPath();
+            ctx.arc(peakX, peakY, 12, 0, Math.PI * 2);
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = 3;
+            ctx.stroke();
         }
     </script>
 
@@ -82,7 +105,7 @@
         </script>
     }
 
-    <!-- METRICS PANEL -->
+    <!-- PRESSURE METRICS PANEL -->
     <div class="card shadow-sm border-0 rounded-4 mb-4">
         <div class="card-body">
             <h4 class="fw-bold text-primary">Pressure Metrics</h4>
@@ -99,11 +122,14 @@
         @(Model.IsHighRisk ? "⚠ CALL EMERGENCY NOW" : "Call Emergency Contact")
     </a>
 
-    <!-- COMMENTS -->
+    <!-- COMMENT SECTION -->
     <h3 class="fw-bold mt-5 text-primary">Leave a Comment</h3>
+
     <form asp-controller="Patient" asp-action="PostComment" method="post">
         <input type="hidden" name="Data_ID" value="@Model.DataId" />
+
         <textarea class="form-control mb-3" name="CommentText" rows="3" placeholder="Write a comment..."></textarea>
+
         <button class="btn btn-primary">Submit Comment</button>
     </form>
 
