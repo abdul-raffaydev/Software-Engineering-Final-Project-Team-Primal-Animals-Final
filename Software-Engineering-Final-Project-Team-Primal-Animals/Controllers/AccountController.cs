@@ -36,7 +36,7 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
 
             // ROLE-BASED REDIRECT
             if (await _userManager.IsInRoleAsync(user, "Admin"))
-                return RedirectToAction("Dashboard", "Admin");
+                return RedirectToAction("AdminDashboard", "Admin");
 
             if (await _userManager.IsInRoleAsync(user, "Clinical"))
                 return RedirectToAction("Dashboard", "Clinical");

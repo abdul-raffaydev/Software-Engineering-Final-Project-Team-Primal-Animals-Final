@@ -5,29 +5,33 @@ using Software_Engineering_Final_Project_Team_Primal_Animals.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// MVC
+// MVC setup
 builder.Services.AddControllersWithViews();
 
-// InMemory Database
+// In-memory database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseInMemoryDatabase("TestDB"));
 
-// Identity
+// Identity setup
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+});
+
 var app = builder.Build();
 
-// Middleware pipeline
+// Middleware
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ========================================================
-// AUTO-SEED ROLES, USERS, PATIENT, SENSOR DATA
-// ========================================================
+// Seed roles and users
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -36,30 +40,28 @@ using (var scope = app.Services.CreateScope())
 
     string[] roles = { "Admin", "Clinical", "Patient" };
 
-    // 1. CREATE ROLES
+    // Create roles
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
-        {
             await roleManager.CreateAsync(new IdentityRole(role));
-        }
     }
 
-    // 2. CREATE ADMIN USER
-    var adminUser = await userManager.FindByEmailAsync("admin@test.com");
-    if (adminUser == null)
+    // Admin user
+    var admin = await userManager.FindByEmailAsync("admin@test.com");
+    if (admin == null)
     {
-        adminUser = new ApplicationUser
+        var newAdmin = new ApplicationUser
         {
-            UserName = "admin@test.com",
-            Email = "admin@test.com"
+            Email = "admin@test.com",
+            UserName = "admin@test.com"
         };
 
-        await userManager.CreateAsync(adminUser, "Admin123!");
-        await userManager.AddToRoleAsync(adminUser, "Admin");
+        await userManager.CreateAsync(newAdmin, "Admin123!");
+        await userManager.AddToRoleAsync(newAdmin, "Admin");
     }
 
-    // 3. CLINICAL USER
+    // Clinical user
     var clinicalUser = await userManager.FindByEmailAsync("clinical@test.com");
     if (clinicalUser == null)
     {
@@ -73,7 +75,7 @@ using (var scope = app.Services.CreateScope())
         await userManager.AddToRoleAsync(clinicalUser, "Clinical");
     }
 
-    // 4. PATIENT USER + APPUSER + PATIENT RECORD + HEATMAP DATA
+    // Patient user + related records
     var patientUser = await userManager.FindByEmailAsync("patient@test.com");
     if (patientUser == null)
     {
@@ -86,7 +88,7 @@ using (var scope = app.Services.CreateScope())
         await userManager.CreateAsync(patientUser, "Patient123!");
         await userManager.AddToRoleAsync(patientUser, "Patient");
 
-        // Create AppUser
+        // AppUser entry
         var appUserEntity = new AppUser
         {
             Full_Name = "John Doe",
@@ -97,11 +99,11 @@ using (var scope = app.Services.CreateScope())
         db.AppUsers.Add(appUserEntity);
         await db.SaveChangesAsync();
 
-        // Link Identity → AppUser
+        // Link identity to AppUser
         patientUser.AppUserId = appUserEntity.AppUserId;
         await userManager.UpdateAsync(patientUser);
 
-        // Create Patient profile
+        // Patient record
         var patientEntity = new Patient
         {
             AppUserId = appUserEntity.AppUserId,
@@ -114,10 +116,10 @@ using (var scope = app.Services.CreateScope())
         db.Patients.Add(patientEntity);
         await db.SaveChangesAsync();
 
-        // Create REAL sample heatmap data
+        // Heatmap data
         var random = new Random();
         var matrixValues = Enumerable.Range(0, 1024)
-                                     .Select(x => random.Next(20, 240)); // realistic pressures
+                                     .Select(x => random.Next(20, 240));
 
         db.SensorData.Add(new SensorData
         {
@@ -132,11 +134,9 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// DEFAULT ROUTE
+// Routing
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
-
-

@@ -20,17 +20,17 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        .navbar-custom .nav-link,
-        .navbar-custom .navbar-brand {
-            color: white !important;
-            font-weight: 500;
-            transition: 0.3s ease;
-        }
+            .navbar-custom .nav-link,
+            .navbar-custom .navbar-brand {
+                color: white !important;
+                font-weight: 500;
+                transition: 0.3s ease;
+            }
 
-        .navbar-custom .nav-link:hover {
-            color: #FFD700 !important;
-            transform: translateY(-2px);
-        }
+                .navbar-custom .nav-link:hover {
+                    color: #FFD700 !important;
+                    transform: translateY(-2px);
+                }
 
         .dashboard-btn {
             font-weight: 600;
@@ -75,7 +75,8 @@
 
                     <!-- 🔹 DASHBOARD LINKS -->
                     <li class="nav-item">
-                        <a class="nav-link dashboard-btn" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a>
+                        <!-- ❗ FIXED HERE -->
+                        <a class="nav-link dashboard-btn" asp-controller="Admin" asp-action="AdminDashboard">Admin Dashboard</a>
                     </li>
 
                     <li class="nav-item">
@@ -140,4 +141,3 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-

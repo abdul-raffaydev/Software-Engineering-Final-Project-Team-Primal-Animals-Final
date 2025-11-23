@@ -17,6 +17,8 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Data
         public DbSet<Patient> Patients { get; set; }
         public DbSet<SensorData> SensorData { get; set; }
         public DbSet<CommentThread> CommentThreads { get; set; }
+        public DbSet<UserAccount> UserAccounts { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
