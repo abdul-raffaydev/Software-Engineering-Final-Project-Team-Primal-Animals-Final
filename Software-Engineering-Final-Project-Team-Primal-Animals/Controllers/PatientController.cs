@@ -3,12 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Software_Engineering_Final_Project_Team_Primal_Animals.Data;
-using Software_Engineering_Final_Project_Team_Primal_Animals.Models;
 using Software_Engineering_Final_Project_Team_Primal_Animals.ViewModels;
-using Software_Engineering_Final_Project_Team_Primal_Animals.InputModels;
-using System.Threading.Tasks;
-using System.Linq;
+using Software_Engineering_Final_Project_Team_Primal_Animals.Models;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
 {
@@ -23,107 +22,100 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
         }
 
         // ================================================================
-        //  PATIENT DASHBOARD
+        // ✅ PATIENT DASHBOARD
         // ================================================================
         [HttpGet]
         public async Task<IActionResult> Dashboard()
         {
-            // Get logged-in ApplicationUser (Identity)
-            string identityId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            // ✅ Logged-in Identity User ID (GUID string)
+            string identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var loggedInUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == identityId);
-
-            if (loggedInUser == null)
-                return Unauthorized("User not found.");
-
-            if (loggedInUser.AppUserId == null)
-                return NotFound("This login account is not linked to an AppUser record.");
-
-            int appUserId = loggedInUser.AppUserId.Value;
-
-            // Load the Patient connected to this AppUser
+            // ✅ Find the matching patient using AppUserId (string)
             var patient = await _context.Patients
                 .Include(p => p.SensorData)
-                .FirstOrDefaultAsync(p => p.AppUserId == appUserId);
+                .FirstOrDefaultAsync(p => p.AppUserId == identityUserId);
 
             if (patient == null)
-                return NotFound("No patient profile found for this user.");
+                return Unauthorized("No patient profile linked to this login.");
 
-            // Latest sensor data frame
+            // ✅ Get latest heatmap frame
             var latestFrame = patient.SensorData
-                .OrderByDescending(d => d.TimeStamp)
+                .OrderByDescending(s => s.TimeStamp)
                 .FirstOrDefault();
+
             if (latestFrame == null)
             {
-                // ✅ Generate realistic, varied heatmap values (0–255)
-                var random = new Random();
-                latestFrame = new SensorData
+                return View(new PatientDashboardVM
                 {
-                    Pressure_Matrix = string.Join(",", Enumerable.Range(0, 1024)
-                                                                 .Select(i => random.Next(0, 255))),
-                    PeakPressureIndex = 230,    // High pressure for alert testing
-                    Contact_Area = "47%",
-                    TimeStamp = DateTime.Now
-                };
+                    PatientName = patient.Full_Name,
+                    EmergencyName = patient.Emergency_contactName,
+                    EmergencyNumber = patient.Emergency_ContactNumber
+                });
             }
 
+            // ✅ Trend Data (Peak pressure over time)
+            var trendFrames = patient.SensorData
+                .OrderBy(s => s.TimeStamp)
+                .ToList();
 
+            // ✅ High-risk threshold
+            bool highRisk = latestFrame.PeakPressureIndex >= 180;
 
-            // Build View Model
-            var threshold = 180;
-            bool highRisk = latestFrame.PeakPressureIndex >= threshold;
-
+            // ✅ Build ViewModel
             var vm = new PatientDashboardVM
             {
+                PatientName = patient.Full_Name,
+
                 PressureMatrix = latestFrame.Pressure_Matrix,
                 PeakPressure = latestFrame.PeakPressureIndex,
                 ContactArea = latestFrame.Contact_Area,
+                Timestamp = latestFrame.TimeStamp,
+                DataId = latestFrame.Data_Id,
+
                 EmergencyName = patient.Emergency_contactName,
                 EmergencyNumber = patient.Emergency_ContactNumber,
-                Timestamp = latestFrame.TimeStamp,
+
                 IsHighRisk = highRisk,
                 AlertMessage = highRisk
                     ? "⚠ High pressure detected! Please reposition immediately."
                     : "✅ Pressure levels are safe.",
-                EscalatedAlert = false
+
+                TrendLabels = trendFrames.Select(f => f.TimeStamp.ToShortDateString()).ToList(),
+                TrendValues = trendFrames.Select(f => f.PeakPressureIndex).ToList()
             };
 
             return View(vm);
-
         }
 
         // ================================================================
-        //  POST COMMENT ON A SENSOR FRAME
+        // ✅ POST COMMENT ON A SENSOR FRAME
         // ================================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostComment(CommentInput input)
+        public async Task<IActionResult> PostComment(int Data_ID, string CommentText)
         {
-            if (!ModelState.IsValid)
+            if (string.IsNullOrWhiteSpace(CommentText))
                 return RedirectToAction(nameof(Dashboard));
 
-            string identityId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var loggedInUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == identityId);
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.AppUserId == identityUserId);
 
-            if (loggedInUser == null)
+            if (patient == null)
                 return Unauthorized();
 
-            // Validate target frame
             var frame = await _context.SensorData
-                .FirstOrDefaultAsync(d => d.Data_Id == input.Data_ID);
+                .FirstOrDefaultAsync(d => d.Data_Id == Data_ID);
 
             if (frame == null)
                 return RedirectToAction(nameof(Dashboard));
 
-            // Create comment entry
             var comment = new CommentThread
             {
-                User_IdentityId = identityId,   // identity user who made the comment
-                Data_ID = input.Data_ID,
-                Content = input.CommentText,
+                Patient_ID = patient.Patient_ID,
+                Data_ID = Data_ID,
+                Content = CommentText,
                 Comment_Time = DateTime.Now
             };
 
@@ -134,4 +126,3 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
         }
     }
 }
-

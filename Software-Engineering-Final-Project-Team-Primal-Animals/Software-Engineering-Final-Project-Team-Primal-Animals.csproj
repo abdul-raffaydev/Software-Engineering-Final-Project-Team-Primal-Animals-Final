@@ -40,6 +40,7 @@
 
   <ItemGroup>
     <Folder Include="NewFolder\" />
+    <Folder Include="Views\Admin\" />
   </ItemGroup>
 
   <ItemGroup>

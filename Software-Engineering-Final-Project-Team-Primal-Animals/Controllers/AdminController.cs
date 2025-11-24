@@ -1,97 +1,39 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Software_Engineering_Final_Project_Team_Primal_Animals.Data;
+using System.Threading.Tasks;
 using Software_Engineering_Final_Project_Team_Primal_Animals.Models;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public AdminController(ApplicationDbContext context)
+        public AdminController(UserManager<ApplicationUser> userManager)
         {
-            _context = context;
+            _userManager = userManager;
         }
 
-        // Dashboard
-        public IActionResult AdminDashboard()
+        // ✅ Show all users
+        public IActionResult Index()
         {
-            return View();
-        }
-
-        // List Users
-        public async Task<IActionResult> UserManagement()
-        {
-            var users = await _context.UserAccounts.ToListAsync();
+            var users = _userManager.Users;
             return View(users);
         }
 
-        // Create Account (OLD WORKING BEHAVIOR RESTORED)
+        // ✅ Delete a user
         [HttpPost]
-        public async Task<IActionResult> CreateAccount(string Username, string Email, string Password, string Role)
+        public async Task<IActionResult> Delete(string id)
         {
-            // Check if email already exists in UserAccounts (not Identity)
-            if (_context.UserAccounts.Any(u => u.Email == Email))
-            {
-                TempData["error"] = "Email already exists!";
-                return RedirectToAction("UserManagement");
-            }
+            var user = await _userManager.FindByIdAsync(id);
 
-            var newUser = new UserAccount
-            {
-                Username = Username,
-                Email = Email,
-                PasswordHash = HashPassword(Password),
-                Role = Role
-            };
+            if (user != null)
+                await _userManager.DeleteAsync(user);
 
-            _context.UserAccounts.Add(newUser);
-            await _context.SaveChangesAsync();
-
-            TempData["success"] = "Account created successfully!";
-            return RedirectToAction("UserManagement");
-        }
-
-        // Reset Password (OLD VERSION)
-        public async Task<IActionResult> ResetPassword(int id)
-        {
-            var user = await _context.UserAccounts.FindAsync(id);
-            if (user == null)
-                return NotFound();
-
-            string defaultPassword = "Password123!";
-            user.PasswordHash = HashPassword(defaultPassword);
-
-            await _context.SaveChangesAsync();
-
-            TempData["success"] = "Password reset to: Password123!";
-            return RedirectToAction("UserManagement");
-        }
-
-        // Delete Account
-        public async Task<IActionResult> DeleteAccount(int id)
-        {
-            var user = await _context.UserAccounts.FindAsync(id);
-            if (user == null)
-                return NotFound();
-
-            _context.UserAccounts.Remove(user);
-            await _context.SaveChangesAsync();
-
-            TempData["success"] = "User deleted!";
-            return RedirectToAction("UserManagement");
-        }
-
-        private string HashPassword(string password)
-        {
-            using var sha = SHA256.Create();
-            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(bytes);
+            return RedirectToAction(nameof(Index));
         }
     }
 }
+
