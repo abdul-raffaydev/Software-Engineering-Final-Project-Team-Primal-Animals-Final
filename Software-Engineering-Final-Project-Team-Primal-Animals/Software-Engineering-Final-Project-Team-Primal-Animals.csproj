@@ -9,6 +9,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="App_Data\HeatMaps\1c0fd777_20251011.csv" />
+    <None Remove="App_Data\HeatMaps\1c0fd777_20251013.csv" />
+    <None Remove="App_Data\HeatMaps\543d4676_20251011.csv" />
+    <None Remove="App_Data\HeatMaps\543d4676_20251012.csv" />
+    <None Remove="App_Data\HeatMaps\543d4676_20251013.csv" />
+    <None Remove="App_Data\HeatMaps\71e66ab3_20251011.csv" />
+    <None Remove="App_Data\HeatMaps\71e66ab3_20251012.csv" />
+    <None Remove="App_Data\HeatMaps\71e66ab3_20251013.csv" />
+    <None Remove="App_Data\HeatMaps\d13043b3_20251011.csv" />
+    <None Remove="App_Data\HeatMaps\d13043b3_20251012.csv" />
+    <None Remove="App_Data\HeatMaps\d13043b3_20251013.csv" />
+    <None Remove="App_Data\HeatMaps\de0e9b2c_20251011.csv" />
+    <None Remove="App_Data\HeatMaps\de0e9b2c_20251012.csv" />
+    <None Remove="App_Data\HeatMaps\de0e9b2c_20251013.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
@@ -23,6 +40,53 @@
 
   <ItemGroup>
     <Folder Include="NewFolder\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Include="App_Data\HeatMaps\1c0fd777_20251011.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="App_Data\HeatMaps\1c0fd777_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\543d4676_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\543d4676_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\543d4676_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\71e66ab3_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\71e66ab3_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\71e66ab3_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\d13043b3_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\d13043b3_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\de0e9b2c_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\de0e9b2c_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\de0e9b2c_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Include="App_Data\HeatMaps\d13043b3_20251012.csv" />
   </ItemGroup>
 
 </Project>
