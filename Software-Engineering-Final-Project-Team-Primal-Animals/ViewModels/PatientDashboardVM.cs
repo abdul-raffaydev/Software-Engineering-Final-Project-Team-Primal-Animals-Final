@@ -19,9 +19,9 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.ViewModels
         public bool IsHighRisk { get; set; }
         public string AlertMessage { get; set; }
 
-        // Trend Graph
+        public int HighPressureThreshold { get; set; }
+
         public List<string> TrendLabels { get; set; } = new();
         public List<int> TrendValues { get; set; } = new();
     }
 }
-

@@ -9,9 +9,9 @@ public class Patient
     public string Age { get; set; }
     public string DateOfBirth { get; set; }
 
-    // ✅ Identity User Link (string!)
     public string AppUserId { get; set; }
     public ApplicationUser AppUser { get; set; }
+    public int HighPressureThreshold { get; set; } = 180;
 
     public ICollection<SensorData> SensorData { get; set; } = new List<SensorData>();
     public ICollection<CommentThread> Comments { get; set; } = new List<CommentThread>();

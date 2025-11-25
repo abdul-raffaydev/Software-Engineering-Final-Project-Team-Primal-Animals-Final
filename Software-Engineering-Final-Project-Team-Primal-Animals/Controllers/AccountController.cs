@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Software_Engineering_Final_Project_Team_Primal_Animals.Models;
+using Software_Engineering_Final_Project_Team_Primal_Animals.ViewModels;
 using System.Threading.Tasks;
 
 namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
@@ -23,28 +24,28 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(string email, string password)
+        [HttpPost]
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null)
-                return View();
+            if (!ModelState.IsValid)
+                return View(model);
 
-            var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
+            var result = await _signInManager.PasswordSignInAsync(
+                model.Email,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: false);
 
-            if (!result.Succeeded)
-                return View();
+            if (result.Succeeded)
+            {
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
 
-            // ROLE-BASED REDIRECT
-            if (await _userManager.IsInRoleAsync(user, "Admin"))
-                return RedirectToAction("AdminDashboard", "Admin");
-
-            if (await _userManager.IsInRoleAsync(user, "Clinical"))
-                return RedirectToAction("Dashboard", "Clinical");
-
-            if (await _userManager.IsInRoleAsync(user, "Patient"))
                 return RedirectToAction("Dashboard", "Patient");
+            }
 
-            return RedirectToAction("Index", "Home");
+            ModelState.AddModelError("", "Invalid login attempt.");
+            return View(model);
         }
 
         [HttpPost]
@@ -60,32 +61,33 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(string email, string password, string confirmPassword, string role)
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (password != confirmPassword)
-                return View();
+            if (!ModelState.IsValid)
+                return View(model);
 
             var user = new ApplicationUser
             {
-                UserName = email,
-                Email = email
+                UserName = model.Email,
+                Email = model.Email,
+                Full_Name = $"{model.FirstName} {model.LastName}"
             };
 
-            var result = await _userManager.CreateAsync(user, password);
-            if (!result.Succeeded)
-                return View();
+            var result = await _userManager.CreateAsync(user, model.Password);
 
-            // Assign selected role
-            await _userManager.AddToRoleAsync(user, role);
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, "Patient");
+                await _signInManager.SignInAsync(user, false);
+                return RedirectToAction("Dashboard", "Patient");
+            }
 
-            // Redirect after registration
-            return RedirectToAction("Login");
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error.Description);
+
+            return View(model);
         }
-    [HttpGet]
-        public IActionResult ForgotPassword()
-        {
-            return View();
-        }
+
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(string email)
         {

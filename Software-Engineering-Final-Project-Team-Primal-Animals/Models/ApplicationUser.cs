@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-public class ApplicationUser : IdentityUser
+namespace Software_Engineering_Final_Project_Team_Primal_Animals.Models
 {
-    public int? AppUserId { get; set; }
+    public class ApplicationUser : IdentityUser
+    {
+     
+        public string? Full_Name { get; set; }
+    }
 }

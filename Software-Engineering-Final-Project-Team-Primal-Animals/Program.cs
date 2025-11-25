@@ -2,16 +2,18 @@
 using Microsoft.EntityFrameworkCore;
 using Software_Engineering_Final_Project_Team_Primal_Animals.Data;
 using Software_Engineering_Final_Project_Team_Primal_Animals.Models;
-using System.IO;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// MVC
 builder.Services.AddControllersWithViews();
 
+// In-memory DB for now
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseInMemoryDatabase("TestDB"));
 
+// Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -22,23 +24,9 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// =========================
-// PATIENT NAME LIST
-// =========================
-var patientNames = new List<string>
-{
-    "Raffay",
-    "Hassan",
-    "Anitta",
-    "Taylor",
-    "Aleena",
-    "Famia",
-    "Angelina"
-};
-
-// =========================
-// CSV IMPORT + PATIENT CREATION
-// =========================
+// ===============================
+// SEED PATIENTS + CSV HEATMAP DATA
+// ===============================
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -46,10 +34,39 @@ using (var scope = app.Services.CreateScope())
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
 
-    // Ensure Patient Role Exists
+    // Ensure Patient role exists
     if (!await roleManager.RoleExistsAsync("Patient"))
         await roleManager.CreateAsync(new IdentityRole("Patient"));
 
+    // 12 patients
+    var patientNames = new List<string>
+    {
+        "Raffay",
+        "Hassan",
+        "Anitta",
+        "Taylor",
+        "Aleena",
+        "Famia",
+        "Angelina",
+        "Ayan",
+        "Dylan",
+        "Maira",
+        "Zara",
+        "Noah"
+    };
+
+    var patientAges = new List<string>
+    {
+        "24","27","31","40","35","29","33","50","22","60","45","38"
+    };
+
+    var patientDob = new List<string>
+    {
+        "2000-01-01","1997-03-15","1993-05-20","1984-09-10","1989-11-25","1995-07-07",
+        "1991-12-30","1974-02-02","2002-08-18","1964-04-05","1979-06-21","1986-10-09"
+    };
+
+    // CSVs location
     var heatmapFolder = Path.Combine(env.ContentRootPath, "App_Data", "Heatmaps");
 
     if (Directory.Exists(heatmapFolder))
@@ -63,34 +80,47 @@ using (var scope = app.Services.CreateScope())
         foreach (var group in groups)
         {
             string name = index < patientNames.Count ? patientNames[index] : $"Patient {index + 1}";
-            string email = $"{name.ToLower()}@test.com";
+            string emailName = name.ToLower().Replace(" ", "");
+            string email = $"{emailName}@test.com";
+
+            string age = index < patientAges.Count ? patientAges[index] : "Unknown";
+            string dob = index < patientDob.Count ? patientDob[index] : "Unknown";
+
             index++;
 
-            // CREATE LOGIN
+            // Create Identity user (with full name)
             var identityUser = new ApplicationUser
             {
                 UserName = email,
-                Email = email
+                Email = email,
+                Full_Name = name
             };
 
-            await userManager.CreateAsync(identityUser, "Password123!");
+            var result = await userManager.CreateAsync(identityUser, "Password123!");
+            if (!result.Succeeded)
+            {
+                // If user already exists or any issue, skip to next
+                continue;
+            }
+
             await userManager.AddToRoleAsync(identityUser, "Patient");
 
-            // CREATE PATIENT PROFILE
+            // Create Patient profile
             var patient = new Patient
             {
                 Full_Name = name,
                 Emergency_contactName = "Emergency Contact",
                 Emergency_ContactNumber = 999999999,
-                Age = "Unknown",
-                DateOfBirth = "Unknown",
-                AppUserId = identityUser.Id
+                Age = age,
+                DateOfBirth = dob,
+                AppUserId = identityUser.Id,
+                HighPressureThreshold = 180
             };
 
             db.Patients.Add(patient);
             await db.SaveChangesAsync();
 
-            // IMPORT CSV HEATMAP FILES
+            // Import CSV frames for this patient
             foreach (var file in group)
             {
                 var filename = Path.GetFileNameWithoutExtension(file);
@@ -102,7 +132,9 @@ using (var scope = app.Services.CreateScope())
                         CultureInfo.InvariantCulture,
                         DateTimeStyles.None,
                         out var parsed))
+                {
                     timestamp = parsed;
+                }
 
                 var lines = File.ReadAllLines(file);
                 var allValues = lines
@@ -140,3 +172,4 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+

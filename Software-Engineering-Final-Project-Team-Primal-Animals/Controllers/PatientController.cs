@@ -21,16 +21,14 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             _context = context;
         }
 
-        // ================================================================
-        // ✅ PATIENT DASHBOARD
-        // ================================================================
+        // ============================
+        // PATIENT DASHBOARD
+        // ============================
         [HttpGet]
         public async Task<IActionResult> Dashboard()
         {
-            // ✅ Logged-in Identity User ID (GUID string)
             string identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // ✅ Find the matching patient using AppUserId (string)
             var patient = await _context.Patients
                 .Include(p => p.SensorData)
                 .FirstOrDefaultAsync(p => p.AppUserId == identityUserId);
@@ -38,7 +36,6 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             if (patient == null)
                 return Unauthorized("No patient profile linked to this login.");
 
-            // ✅ Get latest heatmap frame
             var latestFrame = patient.SensorData
                 .OrderByDescending(s => s.TimeStamp)
                 .FirstOrDefault();
@@ -49,24 +46,43 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
                 {
                     PatientName = patient.Full_Name,
                     EmergencyName = patient.Emergency_contactName,
-                    EmergencyNumber = patient.Emergency_ContactNumber
+                    EmergencyNumber = patient.Emergency_ContactNumber,
+                    HighPressureThreshold = patient.HighPressureThreshold,
+                    TrendLabels = new(),
+                    TrendValues = new()
                 });
             }
 
-            // ✅ Trend Data (Peak pressure over time)
+            // SAFETY: Trim/normalize matrix to 1024 values max (32x32)
+            string trimmedMatrix = "";
+            if (!string.IsNullOrWhiteSpace(latestFrame.Pressure_Matrix))
+            {
+                var vals = latestFrame.Pressure_Matrix
+                    .Split(',', ';', ' ', '\t')
+                    .Select(v => v.Trim())
+                    .Where(v => int.TryParse(v, out _))
+                    .Take(1024) // only first 1024 cells
+                    .ToList();
+
+                // Pad if fewer than 1024, so grid is full
+                while (vals.Count < 1024)
+                    vals.Add("0");
+
+                trimmedMatrix = string.Join(",", vals);
+            }
+
             var trendFrames = patient.SensorData
                 .OrderBy(s => s.TimeStamp)
                 .ToList();
 
-            // ✅ High-risk threshold
-            bool highRisk = latestFrame.PeakPressureIndex >= 180;
+            int threshold = patient.HighPressureThreshold > 0 ? patient.HighPressureThreshold : 180;
+            bool highRisk = latestFrame.PeakPressureIndex >= threshold;
 
-            // ✅ Build ViewModel
             var vm = new PatientDashboardVM
             {
                 PatientName = patient.Full_Name,
 
-                PressureMatrix = latestFrame.Pressure_Matrix,
+                PressureMatrix = trimmedMatrix,
                 PeakPressure = latestFrame.PeakPressureIndex,
                 ContactArea = latestFrame.Contact_Area,
                 Timestamp = latestFrame.TimeStamp,
@@ -75,10 +91,11 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
                 EmergencyName = patient.Emergency_contactName,
                 EmergencyNumber = patient.Emergency_ContactNumber,
 
+                HighPressureThreshold = threshold,
                 IsHighRisk = highRisk,
                 AlertMessage = highRisk
-                    ? "⚠ High pressure detected! Please reposition immediately."
-                    : "✅ Pressure levels are safe.",
+                    ? $"⚠ High pressure detected (Peak {latestFrame.PeakPressureIndex})! Your threshold is {threshold}."
+                    : $"✅ Pressure levels are below your threshold of {threshold}.",
 
                 TrendLabels = trendFrames.Select(f => f.TimeStamp.ToShortDateString()).ToList(),
                 TrendValues = trendFrames.Select(f => f.PeakPressureIndex).ToList()
@@ -87,9 +104,33 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             return View(vm);
         }
 
-        // ================================================================
-        // ✅ POST COMMENT ON A SENSOR FRAME
-        // ================================================================
+        // ============================
+        // UPDATE THRESHOLD
+        // ============================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateThreshold(int threshold)
+        {
+            string identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.AppUserId == identityUserId);
+
+            if (patient == null)
+                return Unauthorized();
+
+            if (threshold < 80) threshold = 80;
+            if (threshold > 255) threshold = 255;
+
+            patient.HighPressureThreshold = threshold;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        // ============================
+        // POST COMMENT
+        // ============================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PostComment(int Data_ID, string CommentText)
@@ -126,3 +167,4 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
         }
     }
 }
+

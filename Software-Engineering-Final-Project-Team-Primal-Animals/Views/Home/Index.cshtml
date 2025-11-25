@@ -1,131 +1,287 @@
 ﻿@{
-    ViewData["Title"] = "Graphene Trace – Smart Pressure Monitoring";
+    ViewData["Title"] = "Graphene Trace";
 }
 
-<!-- ===== HERO SECTION ===== -->
-<section class="py-5 text-center" style="background: linear-gradient(90deg, #0d6efd, #6610f2); color: white;">
-    <div class="container">
-        <h1 class="fw-bold mb-3">Welcome to Graphene Trace</h1>
-        <p class="lead mb-4">
-            Smart real-time pressure monitoring system to prevent pressure ulcers
-            using graphene-based sensor technology.
-        </p>
+<style>
+    body {
+        background: #f5f8fc;
+        font-family: 'Segoe UI', sans-serif;
+    }
 
-        <div class="mt-4">
-            <a asp-controller="Account" asp-action="Login" class="btn btn-light btn-lg me-2">Login</a>
-            <a asp-controller="Account" asp-action="Register" class="btn btn-outline-light btn-lg">Register</a>
-        </div>
-    </div>
-</section>
+    .home-wrapper {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+    }
 
-<!-- ===== INTERACTIVE HEATMAP DEMO ===== -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <h2 class="text-center fw-bold mb-4 text-primary">Live Heatmap Simulation</h2>
-        <p class="text-center text-muted mb-4">
-            This interactive demo represents how the seating pressure heatmap updates in real time.
-        </p>
+    .home-card {
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        padding: 40px 35px;
+    }
 
-        <div class="d-flex justify-content-center">
-            <div id="demo-heatmap"
-                 style="display: grid;
-                        grid-template-columns: repeat(16, 1fr);
-                        width: 320px;
-                        height: 320px;
-                        gap: 0;">
-            </div>
-        </div>
+    .home-title {
+        font-size: 34px;
+        font-weight: 800;
+        color: #005b96;
+        margin-bottom: 10px;
+    }
 
-        <script>
-            const heatDemo = document.getElementById("demo-heatmap");
+    .home-subtitle {
+        font-size: 18px;
+        color: #4a5568;
+        margin-bottom: 20px;
+    }
 
-            function generateHeatmap() {
-                heatDemo.innerHTML = "";
-                for (let i = 0; i < 256; i++) {
-                    const v = Math.floor(Math.random() * 255);
-                    const cell = document.createElement("div");
-                    cell.style.backgroundColor = `rgb(${v}, 20, ${255 - v})`;
-                    cell.style.width = "100%";
-                    cell.style.height = "100%";
-                    heatDemo.appendChild(cell);
-                }
-            }
+    .btn-main {
+        border-radius: 999px;
+        padding: 10px 24px;
+        font-weight: 600;
+    }
 
-            generateHeatmap();
-            setInterval(generateHeatmap, 800); // update every 0.8s
-        </script>
-    </div>
-</section>
+    .insight-box {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+        transition: transform .2s;
+    }
 
-<!-- ===== PRESSURE ULCER RISK INFO ===== -->
-<section class="py-5">
-    <div class="container">
-        <h2 class="text-center fw-bold mb-4 text-danger">Understanding Pressure Ulcers</h2>
+    .insight-box:hover {
+        transform: translateY(-4px);
+    }
 
-        <div class="row g-4">
-            <div class="col-md-6">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Pressure_ulcer_stages.png/640px-Pressure_ulcer_stages.png"
-                     class="img-fluid rounded shadow" alt="Pressure Ulcer Stages" />
-            </div>
+    .insight-number {
+        font-size: 36px;
+        font-weight: 800;
+        color: #0077b6;
+    }
 
-            <div class="col-md-6">
-                <h4 class="fw-bold mb-3">What Causes Pressure Ulcers?</h4>
-                <p class="text-muted">
-                    Pressure ulcers occur when sustained pressure reduces blood flow to the skin.
-                    Individuals using wheelchairs or with limited mobility are at high risk.
-                </p>
+    .testimonial-card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        font-size: 15px;
+        min-height: 160px;
+    }
 
-                <h5 class="fw-bold mt-4">Graphene Trace Helps By:</h5>
-                <ul class="list-group">
-                    <li class="list-group-item">✔ Detecting high-risk pressure zones instantly</li>
-                    <li class="list-group-item">✔ Alerting patients to reposition</li>
-                    <li class="list-group-item">✔ Providing clinicians with accurate heatmaps</li>
-                    <li class="list-group-item">✔ Tracking long-term pressure patterns</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</section>
+    .testimonial-name {
+        font-weight: 600;
+        margin-top: 10px;
+        color: #005b96;
+    }
 
-<!-- ===== FEATURES SECTION ===== -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <h2 class="text-center fw-bold mb-4">Key Features</h2>
+    .trusted-logos img {
+        max-height: 40px;
+        margin: 12px;
+        opacity: 0.8;
+        transition: 0.2s;
+    }
 
-        <div class="row g-4">
+    .trusted-logos img:hover {
+        opacity: 1;
+    }
 
-            <div class="col-md-4">
-                <div class="card shadow border-0 h-100">
-                    <div class="card-body text-center">
-                        <h4 class="fw-bold text-primary">Real-Time Monitoring</h4>
-                        <p class="text-muted">Graphene sensors capture high-resolution pressure data instantly.</p>
+    .video-box {
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    .ai-banner {
+        background: linear-gradient(90deg, #0077b6, #54b3ff);
+        color: white;
+        padding: 25px;
+        border-radius: 18px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: 600;
+        margin-top: 60px;
+    }
+
+    .footer {
+        background: #e9eef3;
+        padding: 25px;
+        text-align: center;
+        margin-top: 60px;
+        font-size: 14px;
+    }
+</style>
+
+<!-- HERO SECTION -->
+<div class="container home-wrapper">
+    <div class="row w-100 justify-content-center">
+        <div class="col-lg-10">
+            <div class="home-card">
+                <div class="row align-items-center">
+
+                    <!-- LEFT SIDE -->
+                    <div class="col-md-7">
+                        <h1 class="home-title">Graphene Trace</h1>
+                        <p class="home-subtitle">
+                            Smart wheelchair pressure monitoring to prevent pressure ulcers through real-time heatmaps,
+                            predictive warnings, and clinician oversight.
+                        </p>
+
+                        <div class="d-flex flex-wrap gap-2 mt-4">
+                            <a href="/Account/Login" class="btn btn-primary btn-main">Login</a>
+                            <a href="/Account/Register" class="btn btn-outline-primary btn-main">Register</a>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT SIDE HEATMAP -->
+                    <div class="col-md-5">
+                        <canvas id="homeHeatmap" width="220" height="220"
+                                style="width:100%; border-radius:10px; background:#f3f4f6;"></canvas>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-md-4">
-                <div class="card shadow border-0 h-100">
-                    <div class="card-body text-center">
-                        <h4 class="fw-bold text-success">AI Risk Prediction</h4>
-                        <p class="text-muted">Machine learning identifies dangerous pressure patterns early.</p>
+                <!-- CLINICAL INSIGHTS -->
+                <div class="text-center mt-5">
+                    <h4 class="fw-bold text-primary mb-4">Clinical Insights</h4>
+                    <div class="row g-4 justify-content-center">
+
+                        <div class="col-md-3">
+                            <div class="insight-box">
+                                <div class="insight-number" data-target="1242">0</div>
+                                <div class="insight-label">Active Patients</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="insight-box">
+                                <div class="insight-number" data-target="8541">0</div>
+                                <div class="insight-label">Heatmaps Logged</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="insight-box">
+                                <div class="insight-number" data-target="312">0</div>
+                                <div class="insight-label">Alerts Today</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="insight-box">
+                                <div class="insight-number" data-target="189">0</div>
+                                <div class="insight-label">Clinician Reviews</div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-            </div>
 
-            <div class="col-md-4">
-                <div class="card shadow border-0 h-100">
-                    <div class="card-body text-center">
-                        <h4 class="fw-bold text-danger">Clinical Insights</h4>
-                        <p class="text-muted">Clinicians access heatmaps, comments, and patient risk levels.</p>
+                <!-- TRUSTED HOSPITALS -->
+                <div class="text-center mt-5">
+                    <h5 class="fw-bold text-secondary">Trusted By Leading Healthcare Providers</h5>
+                    <div class="trusted-logos d-flex justify-content-center flex-wrap mt-3">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/NHS-logo.svg" />
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/3/30/Mayo_Clinic_logo.svg" />
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Cleveland_Clinic_logo.svg" />
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3d/Johns_Hopkins_University_logo.svg" />
                     </div>
                 </div>
-            </div>
 
+                <!-- VIDEO DEMO -->
+                <div class="mt-5 video-box">
+                    <iframe width="100%" height="380"
+                            src="https://www.youtube.com/embed/OtqJX6FJfWg"
+                            title="Graphene Trace Demo"
+                            allowfullscreen></iframe>
+                </div>
+
+                <!-- TESTIMONIALS -->
+                <div class="text-center mt-5">
+                    <h4 class="fw-bold text-primary mb-4">What Users Say</h4>
+                    <div class="row g-4">
+
+                        <div class="col-md-4">
+                            <div class="testimonial-card">
+                                “The alerts helped me adjust posture in time and prevented sores.”
+                                <div class="testimonial-name">— Hassan</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="testimonial-card">
+                                “My clinician can monitor me remotely. It gives peace of mind.”
+                                <div class="testimonial-name">— Angelina</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="testimonial-card">
+                                “Amazing technology for wheelchair users. The heatmap is so helpful.”
+                                <div class="testimonial-name">— Aleena</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- AI ULCER RISK BANNER -->
+                <div class="ai-banner">
+                    ⚠ AI-Driven Ulcer Prediction Coming Soon —
+                    Predict risks before they happen with early warning models.
+                </div>
+
+                <!-- FOOTER -->
+                <div class="footer">
+                    © 2025 Graphene Trace · Accessibility Mode · Language · Privacy · Terms
+                </div>
+            </div>
         </div>
     </div>
-</section>
+</div>
 
-<!-- ===== FOOTER ===== -->
-<footer class="text-center py-4 bg-dark text-white mt-5">
-    Graphene Trace · Medical Pressure Monitoring System — 2025
-</footer>
+<script>
+// Heatmap (Demo)
+const canvas = document.getElementById("homeHeatmap");
+if (canvas) {
+    const ctx = canvas.getContext("2d");
+    const grid = 16;
+    const cell = canvas.width / grid;
+    const values = [];
+    for (let i = 0; i < grid * grid; i++) {
+        let val = Math.random() * 120;
+        const row = Math.floor(i / grid);
+        const col = i % grid;
+        const distCenter = Math.hypot(row - grid/2, col - grid/2);
+        if (distCenter < 4) { val += 100 - distCenter * 10; }
+        if (val > 255) val = 255;
+        values.push(val);
+    }
+    ctx.filter = "blur(1.5px)";
+    values.forEach((v, i) => {
+        const x = (i % grid) * cell;
+        const y = Math.floor(i / grid) * cell;
+        const t = v / 255;
+        const r = Math.floor(255 * t);
+        const g = Math.floor(255 * (1 - Math.abs(t - 0.5) * 2));
+        const b = Math.floor(255 * (1 - t));
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.fillRect(x, y, cell, cell);
+    });
+}
+
+// Counters
+document.querySelectorAll('.insight-number').forEach(counter => {
+    counter.innerText = '0';
+    const updateCounter = () => {
+        const target = +counter.getAttribute('data-target');
+        const value = +counter.innerText;
+        const inc = target / 120;
+        if (value < target) {
+            counter.innerText = `${Math.ceil(value + inc)}`;
+            setTimeout(updateCounter, 15);
+        } else {
+            counter.innerText = target;
+        }
+    };
+    updateCounter();
+});
+</script>
+

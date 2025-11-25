@@ -1,0 +1,80 @@
+﻿@{
+    ViewData["Title"] = "Payment Plans";
+}
+
+<style>
+    body {
+        background: #f7f9fb;
+        font-family: 'Segoe UI';
+    }
+
+    .plan-box {
+        background: white;
+        padding: 35px;
+        border-radius: 18px;
+        box-shadow: 0px 4px 12px rgba(0,0,0,0.06);
+        text-align: center;
+    }
+
+    .plan-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #0077b6;
+    }
+
+    .price {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 15px 0;
+    }
+</style>
+
+<div class="container mt-5">
+    <h1 class="fw-bold text-primary text-center mb-4">Pricing & Plans</h1>
+
+    <div class="row g-4">
+
+        <!-- Basic -->
+        <div class="col-md-4">
+            <div class="plan-box">
+                <h3 class="plan-title">Basic Plan</h3>
+                <p class="price">$19 / month</p>
+                <ul class="text-start">
+                    <li>Heatmap Dashboard</li>
+                    <li>Pressure Alerts</li>
+                    <li>Emergency Contact Access</li>
+                </ul>
+                <button class="btn btn-outline-primary mt-3">Choose Plan</button>
+            </div>
+        </div>
+
+        <!-- Pro -->
+        <div class="col-md-4">
+            <div class="plan-box">
+                <h3 class="plan-title">Pro Plan</h3>
+                <p class="price">$39 / month</p>
+                <ul class="text-start">
+                    <li>All Basic Features</li>
+                    <li>Clinician Messaging</li>
+                    <li>Pressure Trend Reports</li>
+                </ul>
+                <button class="btn btn-primary mt-3">Choose Plan</button>
+            </div>
+        </div>
+
+        <!-- Medical Enterprise -->
+        <div class="col-md-4">
+            <div class="plan-box">
+                <h3 class="plan-title">Enterprise Medical</h3>
+                <p class="price">Custom Pricing</p>
+                <ul class="text-start">
+                    <li>Multi-User Management</li>
+                    <li>Clinical Portals</li>
+                    <li>Data Export & Research Tools</li>
+                </ul>
+                <button class="btn btn-outline-dark mt-3">Contact Sales</button>
+            </div>
+        </div>
+
+    </div>
+</div>
