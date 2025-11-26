@@ -81,7 +81,7 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             var vm = new PatientDashboardVM
             {
                 PatientName = patient.Full_Name,
-
+                PatientId = patient.Patient_ID,
                 PressureMatrix = trimmedMatrix,
                 PeakPressure = latestFrame.PeakPressureIndex,
                 ContactArea = latestFrame.Contact_Area,

@@ -8,6 +8,9 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.ViewModels
         [Display(Name = "Full Name")]
         public string FullName { get; set; }
 
+        [Display(Name = "Patient ID")]
+        public int PatientId { get; set; }  
+
         [Display(Name = "Date of Birth")]
         public string DateOfBirth { get; set; }
 

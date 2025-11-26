@@ -9,11 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 // MVC
 builder.Services.AddControllersWithViews();
 
-// In-memory DB for now
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseInMemoryDatabase("TestDB"));
 
-// Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -38,32 +37,25 @@ using (var scope = app.Services.CreateScope())
     if (!await roleManager.RoleExistsAsync("Patient"))
         await roleManager.CreateAsync(new IdentityRole("Patient"));
 
-    // 12 patients
+    // 5 patients
     var patientNames = new List<string>
     {
         "Raffay",
         "Hassan",
         "Anitta",
         "Taylor",
-        "Aleena",
-        "Famia",
-        "Angelina",
-        "Ayan",
-        "Dylan",
-        "Maira",
-        "Zara",
-        "Noah"
+        "Aleena"
     };
 
     var patientAges = new List<string>
     {
-        "24","27","31","40","35","29","33","50","22","60","45","38"
+        "24","27","31","40","35"
     };
 
     var patientDob = new List<string>
     {
-        "2000-01-01","1997-03-15","1993-05-20","1984-09-10","1989-11-25","1995-07-07",
-        "1991-12-30","1974-02-02","2002-08-18","1964-04-05","1979-06-21","1986-10-09"
+        "2000-01-01","1997-03-15","1993-05-20","1984-09-10","1989-11-25"
+       
     };
 
     // CSVs location
