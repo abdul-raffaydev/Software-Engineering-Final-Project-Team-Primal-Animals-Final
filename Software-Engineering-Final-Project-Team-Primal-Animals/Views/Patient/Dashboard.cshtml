@@ -1,0 +1,282 @@
+﻿@model Software_Engineering_Final_Project_Team_Primal_Animals.ViewModels.PatientDashboardVM
+
+<div class="container mt-5">
+
+    <!-- HEADER with dropdown -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-primary mb-1">Welcome, @Model.PatientName</h2>
+            <p class="text-muted small">Patient ID: <strong>@Model.PatientId</strong></p>
+            <p class="text-muted mb-0">Seating pressure monitoring and ulcer prevention</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <!-- Account menu -->
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    Account & Support
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <a class="dropdown-item" href="/Account/Settings">Account Settings</a>
+                    <li><a class="dropdown-item" href="#contact-clinician">Contact Clinician</a></li>
+                    <li><a class="dropdown-item" href="#threshold-section">Set Alert Threshold</a></li>
+                </ul>
+            </div>
+
+            <!-- Info menu -->
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    More
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="/Home/About">Information</a></li>
+                    <li><a class="dropdown-item" href="/Home/Plans">Payment Plans</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALERT -->
+    @if (!string.IsNullOrEmpty(Model.AlertMessage))
+    {
+        <div class="alert @(Model.IsHighRisk ? "alert-danger" : "alert-success") fw-bold rounded-3 shadow-sm p-3 mb-4">
+            @Model.AlertMessage
+        </div>
+    }
+
+    <div class="row">
+        <!-- LEFT: HEATMAP + TREND -->
+        <div class="col-lg-7">
+
+            <!-- HEATMAP CARD -->
+            <div class="card shadow-sm mb-4 rounded-4">
+                <div class="card-body">
+                    <h5 class="fw-bold text-secondary mb-3">Current Pressure Heatmap</h5>
+
+                    <div id="heatmap-container"
+                         class="p-2 rounded-3"
+                         style="background: #fafafa; border: 2px solid #e0e0e0;">
+                        <canvas id="heatmapCanvas" width="360" height="360"
+                                style="width:100%; border-radius:10px;"></canvas>
+                    </div>
+
+                    <div class="mt-2 text-center fw-bold small">
+                        <span style="color: blue;">Low</span> →
+                        <span style="color: green;">Moderate</span> →
+                        <span style="color: orange;">High</span> →
+                        <span style="color: red;">Critical</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TREND GRAPH -->
+            <div class="card shadow-sm mb-4 rounded-4">
+                <div class="card-body">
+                    <h5 class="fw-bold text-secondary mb-3">Peak Pressure Trend</h5>
+                    <canvas id="trendGraph" width="400" height="160"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: METRICS, THRESHOLD, EMERGENCY, CLINICIAN -->
+        <div class="col-lg-5">
+
+            <!-- METRICS -->
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold text-primary">Pressure Metrics</h5>
+                    <hr />
+                    <p><strong>Peak Pressure:</strong> @Model.PeakPressure</p>
+                    <p><strong>Contact Area:</strong> @Model.ContactArea</p>
+                    <p><strong>Last Updated:</strong> @Model.Timestamp</p>
+                </div>
+            </div>
+
+            <!-- THRESHOLD CONTROL -->
+            <div id="threshold-section" class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold text-secondary">Alert Threshold</h5>
+                    <p class="text-muted small mb-2">
+                        Your current high-pressure threshold is <strong>@Model.HighPressureThreshold</strong>.
+                        You will receive warnings if peak pressure goes above this value.
+                    </p>
+
+                    <form asp-controller="Patient" asp-action="UpdateThreshold" method="post" class="mt-2">
+                        <input type="range" class="form-range" min="80" max="255"
+                               value="@Model.HighPressureThreshold" id="thresholdRange" name="threshold"
+                               oninput="document.getElementById('thresholdValue').innerText = this.value;" />
+
+                        <p class="mb-2">
+                            Selected threshold:
+                            <strong id="thresholdValue">@Model.HighPressureThreshold</strong>
+                        </p>
+
+                        <button class="btn btn-outline-primary btn-sm">Save Threshold</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- EMERGENCY -->
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card-body text-center">
+                    <h5 class="fw-bold text-secondary mb-2">Emergency Contact</h5>
+                    <p class="fw-bold mb-0">@Model.EmergencyName</p>
+                    <p class="text-muted">@Model.EmergencyNumber</p>
+                    <a href="tel:@Model.EmergencyNumber"
+                       class="btn @(Model.IsHighRisk ? "btn-danger" : "btn-outline-danger") w-100 fw-bold">
+                        @(Model.IsHighRisk ? "⚠ Call Now" : "Call Emergency Contact")
+                    </a>
+                </div>
+            </div>
+
+            <!-- CONTACT CLINICIAN -->
+            <div id="contact-clinician" class="card shadow-sm border-0 rounded-4">
+                <div class="card-body">
+                    <h5 class="fw-bold text-secondary mb-2">Contact Your Clinician</h5>
+                    <p class="text-muted small">
+                        If you notice persistent redness, discomfort, or high pressure alerts,
+                        please reach out to your clinician.
+                    </p>
+                    <a href="mailto:clinician@example.com" class="btn btn-primary w-100 fw-bold">
+                        Message Clinician
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMMENTS SECTION -->
+    <div class="card shadow-sm rounded-4 mt-5">
+        <div class="card-body">
+            <h5 class="fw-bold text-primary mb-3">Your Notes & Comments</h5>
+
+            <form asp-controller="Patient" asp-action="PostComment" method="post">
+                <input type="hidden" name="Data_ID" value="@Model.DataId" />
+                <textarea class="form-control mb-3" name="CommentText" rows="3"
+                          placeholder="Write what you’re feeling, discomfort zones, or posture changes..."></textarea>
+                <button class="btn btn-primary">Submit Comment</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- HEATMAP SCRIPT -->
+<script>
+    (function () {
+        const matrixString = "@(Model.PressureMatrix ?? "")";
+
+        if (!matrixString || matrixString.length === 0) {
+            return; // nothing to draw
+        }
+
+        let values = matrixString
+            .split(',')
+            .map(v => parseInt(v.trim()))
+            .filter(v => !isNaN(v));
+
+        if (values.length === 0) {
+            return;
+        }
+
+        // ensure max 1024 cells
+        if (values.length > 1024) {
+            values = values.slice(0, 1024);
+        }
+        while (values.length < 1024) {
+            values.push(0);
+        }
+
+        const canvas = document.getElementById("heatmapCanvas");
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        const grid = 32;
+        const cell = canvas.width / grid;
+
+        ctx.filter = "blur(3px)";
+
+        values.forEach((v, i) => {
+            const x = (i % grid) * cell;
+            const y = Math.floor(i / grid) * cell;
+
+            const t = v / 255;
+            const r = Math.floor(255 * t);
+            const g = Math.floor(255 * (1 - Math.abs(t - 0.5) * 2));
+            const b = Math.floor(255 * (1 - t));
+
+            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+            ctx.fillRect(x, y, cell, cell);
+        });
+    })();
+</script>
+
+<!-- TREND GRAPH SCRIPT -->
+<script>
+    (function () {
+        const trendLabels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.TrendLabels ?? new List<string>()));
+        const trendValues = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.TrendValues ?? new List<int>()));
+
+        if (!trendLabels || trendLabels.length === 0 || !trendValues || trendValues.length === 0) {
+            return; // nothing to chart
+        }
+
+        const canvas = document.getElementById('trendGraph');
+        if (!canvas) return;
+
+        const ctxTrend = canvas.getContext('2d');
+
+        new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Peak Pressure',
+                    data: trendValues,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { title: { display: true, text: 'Pressure' } },
+                    x: { title: { display: true, text: 'Time' } }
+                }
+            }
+        });
+    })();
+</script>
+
+@if (Model.IsHighRisk)
+{
+    <style>
+        #heatmap-container {
+            animation: blink 0.8s infinite alternate;
+            border: 3px solid red !important;
+        }
+
+        @@keyframes blink {
+            from {
+                border-color: red;
+            }
+
+            to {
+                border-color: darkred;
+            }
+        }
+    </style>
+
+    <audio id="alert-sound">
+        <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+    </audio>
+
+    <script>
+        document.getElementById("alert-sound")?.play();
+    </script>
+}

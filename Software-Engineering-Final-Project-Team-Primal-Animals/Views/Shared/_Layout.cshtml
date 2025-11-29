@@ -1,43 +1,147 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/> </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                        </li>
-                        <li class="nav-item">
+    <title>@ViewData["Title"] - Graphene Trace</title>
 
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+
+    <style>
+        /* Modern Navbar Styling */
+        .navbar-custom {
+            background: linear-gradient(90deg, #0D6EFD 0%, #6610F2 100%);
+            padding: 0.8rem 1.2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+            .navbar-custom .nav-link,
+            .navbar-custom .navbar-brand {
+                color: white !important;
+                font-weight: 500;
+                transition: 0.3s ease;
+            }
+
+                .navbar-custom .nav-link:hover {
+                    color: #FFD700 !important;
+                    transform: translateY(-2px);
+                }
+
+        .dashboard-btn {
+            font-weight: 600;
+            margin-right: 1rem;
+        }
+
+        footer {
+            background: #f8f9fa;
+            padding: 1rem 0;
+            margin-top: 3rem;
+            border-top: 1px solid #ddd;
+        }
+
+        body {
+            background-color: #f5f7fa;
+        }
+
+        .content-wrapper {
+            padding-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 🔹 NAVIGATION BAR -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid">
+
+            <!-- Brand -->
+            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                <strong>Graphene Trace</strong>
+            </a>
+
+            <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Links -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                    <!-- 🔹 DASHBOARD LINKS -->
+                    <li class="nav-item">
+                        <!-- ❗ FIXED HERE -->
+                        <a class="nav-link dashboard-btn" asp-controller="Admin" asp-action="AdminDashboard">Admin Dashboard</a>
+                    </li>
+
+                    <a asp-controller="Clinician" asp-action="ClinicianDashboard" class="nav-link">
+                        Clinician Dashboard
+                    </a>
+
+                    <a asp-controller="Clinician" asp-action="PatientDetails" class="nav-link">
+                        Clinical Details
+                    </a>
+
+                    <li class="nav-item">
+                        <a class="nav-link dashboard-btn" asp-controller="Patient" asp-action="Dashboard">Patient Dashboard</a>
+                    </li>
+                </ul>
+
+                <!-- 🔹 USER AUTH LINKS -->
+                <ul class="navbar-nav ms-auto">
+
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <li class="nav-item">
+                            <span class="nav-link text-white">
+                                Hello, @UserManager.GetUserName(User)!
+                            </span>
                         </li>
-                    </ul>
-                </div>
+
+                        <li class="nav-item">
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit" class="btn btn-warning btn-sm ms-2">Logout</button>
+                            </form>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-controller="Account" asp-action="Login">Login</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-controller="Account" asp-action="Register">Register</a>
+                        </li>
+                    }
+
+                </ul>
             </div>
-        </nav>
-    </header>
-    <div class="container">
+        </div>
+    </nav>
+
+    <!-- 🔹 MAIN CONTENT AREA -->
+    <div class="container content-wrapper">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-       
+    <!-- 🔹 FOOTER -->
+    <footer>
+        <div class="container text-center">
+            <span class="text-muted">© 2025 Graphene Trace | Smart Pressure Mapping System</span>
+        </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

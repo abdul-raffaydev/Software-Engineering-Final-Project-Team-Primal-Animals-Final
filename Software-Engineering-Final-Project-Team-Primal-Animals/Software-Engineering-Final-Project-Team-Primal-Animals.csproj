@@ -1,20 +1,94 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Software_Engineering_Final_Project_Team_Primal_Animals</RootNamespace>
+    <OutputType>WinExe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="App_Data\HeatMaps\1c0fd777_20251011.csv" />
+    <None Remove="App_Data\HeatMaps\1c0fd777_20251013.csv" />
+    <None Remove="App_Data\HeatMaps\543d4676_20251011.csv" />
+    <None Remove="App_Data\HeatMaps\543d4676_20251012.csv" />
+    <None Remove="App_Data\HeatMaps\543d4676_20251013.csv" />
+    <None Remove="App_Data\HeatMaps\71e66ab3_20251011.csv" />
+    <None Remove="App_Data\HeatMaps\71e66ab3_20251012.csv" />
+    <None Remove="App_Data\HeatMaps\71e66ab3_20251013.csv" />
+    <None Remove="App_Data\HeatMaps\d13043b3_20251011.csv" />
+    <None Remove="App_Data\HeatMaps\d13043b3_20251012.csv" />
+    <None Remove="App_Data\HeatMaps\d13043b3_20251013.csv" />
+    <None Remove="App_Data\HeatMaps\de0e9b2c_20251011.csv" />
+    <None Remove="App_Data\HeatMaps\de0e9b2c_20251012.csv" />
+    <None Remove="App_Data\HeatMaps\de0e9b2c_20251013.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="10.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.22" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.10">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="NewFolder\" />
+    <Folder Include="Views\Admin\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Include="App_Data\HeatMaps\1c0fd777_20251011.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="App_Data\HeatMaps\1c0fd777_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\543d4676_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\543d4676_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\543d4676_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\71e66ab3_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\71e66ab3_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\71e66ab3_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\d13043b3_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\d13043b3_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\de0e9b2c_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\de0e9b2c_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\HeatMaps\de0e9b2c_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Include="App_Data\HeatMaps\d13043b3_20251012.csv" />
   </ItemGroup>
 
 </Project>
