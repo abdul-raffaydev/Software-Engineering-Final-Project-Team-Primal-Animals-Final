@@ -11,10 +11,18 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Data
         {
         }
 
-        // REGISTER ALL TABLES HERE
+        // ==============================
+        // DOMAIN TABLES
+        // ==============================
         public DbSet<Patient> Patients { get; set; }
         public DbSet<SensorData> SensorData { get; set; }
         public DbSet<CommentThread> CommentThreads { get; set; }
+
+        // ==============================
+        // ADMIN TABLES (SAFE ADDITIONS)
+        // ==============================
+        public DbSet<UserAccount> UserAccounts { get; set; }
+        public DbSet<SystemSetting> SystemSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -32,7 +40,7 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Data
             builder.Entity<CommentThread>()
                 .HasKey(c => c.Comment_ID);
 
-            // Patient ↔ IdentityUser 1-to-1
+            // Patient ↔ IdentityUser (1-to-1)
             builder.Entity<Patient>()
                 .HasOne(p => p.AppUser)
                 .WithOne()
@@ -40,14 +48,14 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Data
                 .HasPrincipalKey<ApplicationUser>(u => u.Id)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Patient ↔ SensorData 1-to-many
+            // Patient ↔ SensorData (1-to-many)
             builder.Entity<SensorData>()
                 .HasOne(s => s.Patient)
                 .WithMany(p => p.SensorData)
                 .HasForeignKey(s => s.Patient_ID)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Patient ↔ CommentThread 1-to-many
+            // Patient ↔ CommentThread (1-to-many)
             builder.Entity<CommentThread>()
                 .HasOne(c => c.Patient)
                 .WithMany(p => p.Comments)

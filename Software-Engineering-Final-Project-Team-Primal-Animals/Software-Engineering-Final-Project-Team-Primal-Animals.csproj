@@ -9,6 +9,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="App_Data\GTLB-Data\1c0fd777_20251011.csv" />
+    <None Remove="App_Data\GTLB-Data\1c0fd777_20251012.csv" />
+    <None Remove="App_Data\GTLB-Data\1c0fd777_20251013.csv" />
+    <None Remove="App_Data\GTLB-Data\543d4676_20251011.csv" />
+    <None Remove="App_Data\GTLB-Data\543d4676_20251012.csv" />
+    <None Remove="App_Data\GTLB-Data\543d4676_20251013.csv" />
+    <None Remove="App_Data\GTLB-Data\71e66ab3_20251011.csv" />
+    <None Remove="App_Data\GTLB-Data\71e66ab3_20251012.csv" />
+    <None Remove="App_Data\GTLB-Data\71e66ab3_20251013.csv" />
+    <None Remove="App_Data\GTLB-Data\d13043b3_20251011.csv" />
+    <None Remove="App_Data\GTLB-Data\d13043b3_20251012.csv" />
+    <None Remove="App_Data\GTLB-Data\d13043b3_20251013.csv" />
+    <None Remove="App_Data\GTLB-Data\de0e9b2c_20251011.csv" />
+    <None Remove="App_Data\GTLB-Data\de0e9b2c_20251012.csv" />
+    <None Remove="App_Data\GTLB-Data\de0e9b2c_20251013.csv" />
     <None Remove="App_Data\HeatMaps\1c0fd777_20251011.csv" />
     <None Remove="App_Data\HeatMaps\1c0fd777_20251013.csv" />
     <None Remove="App_Data\HeatMaps\543d4676_20251011.csv" />
@@ -23,6 +38,21 @@
     <None Remove="App_Data\HeatMaps\de0e9b2c_20251011.csv" />
     <None Remove="App_Data\HeatMaps\de0e9b2c_20251012.csv" />
     <None Remove="App_Data\HeatMaps\de0e9b2c_20251013.csv" />
+    <None Remove="GTLB-Data\1c0fd777_20251011.csv" />
+    <None Remove="GTLB-Data\1c0fd777_20251012.csv" />
+    <None Remove="GTLB-Data\1c0fd777_20251013.csv" />
+    <None Remove="GTLB-Data\543d4676_20251011.csv" />
+    <None Remove="GTLB-Data\543d4676_20251012.csv" />
+    <None Remove="GTLB-Data\543d4676_20251013.csv" />
+    <None Remove="GTLB-Data\71e66ab3_20251011.csv" />
+    <None Remove="GTLB-Data\71e66ab3_20251012.csv" />
+    <None Remove="GTLB-Data\71e66ab3_20251013.csv" />
+    <None Remove="GTLB-Data\d13043b3_20251011.csv" />
+    <None Remove="GTLB-Data\d13043b3_20251012.csv" />
+    <None Remove="GTLB-Data\d13043b3_20251013.csv" />
+    <None Remove="GTLB-Data\de0e9b2c_20251011.csv" />
+    <None Remove="GTLB-Data\de0e9b2c_20251012.csv" />
+    <None Remove="GTLB-Data\de0e9b2c_20251013.csv" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,7 +70,6 @@
 
   <ItemGroup>
     <Folder Include="NewFolder\" />
-    <Folder Include="Views\Admin\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,6 +77,51 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="App_Data\GTLB-Data\1c0fd777_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\1c0fd777_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\1c0fd777_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\543d4676_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\543d4676_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\543d4676_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\71e66ab3_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\71e66ab3_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\71e66ab3_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\d13043b3_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\d13043b3_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\d13043b3_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\de0e9b2c_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\de0e9b2c_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\GTLB-Data\de0e9b2c_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="App_Data\HeatMaps\1c0fd777_20251013.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -82,6 +156,51 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="App_Data\HeatMaps\de0e9b2c_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\1c0fd777_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\1c0fd777_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\1c0fd777_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\543d4676_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\543d4676_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\543d4676_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\71e66ab3_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\71e66ab3_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\71e66ab3_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\d13043b3_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\d13043b3_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\d13043b3_20251013.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\de0e9b2c_20251011.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\de0e9b2c_20251012.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GTLB-Data\de0e9b2c_20251013.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -9,12 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 // MVC
 builder.Services.AddControllersWithViews();
 
-
+// From In-Memory DB
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseInMemoryDatabase("TestDB"));
 
+// Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
 var app = builder.Build();
 
@@ -23,9 +25,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ===============================
-// SEED PATIENTS + CSV HEATMAP DATA
-// ===============================
+// INITIAL DATA SEEDING
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -33,11 +33,59 @@ using (var scope = app.Services.CreateScope())
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
 
-    // Ensure Patient role exists
-    if (!await roleManager.RoleExistsAsync("Patient"))
-        await roleManager.CreateAsync(new IdentityRole("Patient"));
+    // ROLES
+    string[] roles = { "Admin", "Clinical", "Patient" };
+    foreach (var r in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(r))
+            await roleManager.CreateAsync(new IdentityRole(r));
+    }
 
-    // 5 patients
+    // ADMIN USER
+    var adminEmail = "admin@test.com";
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+    if (adminUser == null)
+    {
+        adminUser = new ApplicationUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            Full_Name = "System Admin"
+        };
+
+        var res = await userManager.CreateAsync(adminUser, "Admin123!");
+        if (res.Succeeded)
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+    }
+
+     
+    // CLINICIANS
+    var clinicianSeed = new List<string>
+    {
+        "claire.wilson@test.com",
+        "dr.jameson@test.com",
+        "nurse.emma@test.com"
+    };
+
+    foreach (var email in clinicianSeed)
+    {
+        var u = await userManager.FindByEmailAsync(email);
+        if (u == null)
+        {
+            u = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                Full_Name = email.Split('@')[0].Replace(".", " ").ToUpper()
+            };
+
+            if ((await userManager.CreateAsync(u, "Clinician123!")).Succeeded)
+                await userManager.AddToRoleAsync(u, "Clinical");
+        }
+    }
+
+    // PATIENTS
     var patientNames = new List<string>
     {
         "Raffay",
@@ -55,49 +103,49 @@ using (var scope = app.Services.CreateScope())
     var patientDob = new List<string>
     {
         "2000-01-01","1997-03-15","1993-05-20","1984-09-10","1989-11-25"
-       
     };
 
-    // CSVs location
     var heatmapFolder = Path.Combine(env.ContentRootPath, "App_Data", "Heatmaps");
 
     if (Directory.Exists(heatmapFolder))
     {
         var groups = Directory.GetFiles(heatmapFolder, "*.csv")
             .GroupBy(f => Path.GetFileNameWithoutExtension(f).Split('_')[0])
+            .Take(5) 
             .ToList();
 
         int index = 0;
 
         foreach (var group in groups)
         {
-            string name = index < patientNames.Count ? patientNames[index] : $"Patient {index + 1}";
+            string name = patientNames[index];
             string emailName = name.ToLower().Replace(" ", "");
             string email = $"{emailName}@test.com";
 
-            string age = index < patientAges.Count ? patientAges[index] : "Unknown";
-            string dob = index < patientDob.Count ? patientDob[index] : "Unknown";
+            string age = patientAges[index];
+            string dob = patientDob[index];
 
             index++;
 
-            // Create Identity user (with full name)
-            var identityUser = new ApplicationUser
+            // CREATE USER
+            var identityUser = await userManager.FindByEmailAsync(email);
+            if (identityUser == null)
             {
-                UserName = email,
-                Email = email,
-                Full_Name = name
-            };
+                identityUser = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    Full_Name = name
+                };
 
-            var result = await userManager.CreateAsync(identityUser, "Password123!");
-            if (!result.Succeeded)
-            {
-                // If user already exists or any issue, skip to next
-                continue;
+                var result = await userManager.CreateAsync(identityUser, "Password123!");
+                if (!result.Succeeded)
+                    continue;
+
+                await userManager.AddToRoleAsync(identityUser, "Patient");
             }
 
-            await userManager.AddToRoleAsync(identityUser, "Patient");
-
-            // Create Patient profile
+            // PATIENT PROFILE
             var patient = new Patient
             {
                 Full_Name = name,
@@ -112,11 +160,12 @@ using (var scope = app.Services.CreateScope())
             db.Patients.Add(patient);
             await db.SaveChangesAsync();
 
-            // Import CSV frames for this patient
+            // Import CSV heatmap frames
             foreach (var file in group)
             {
                 var filename = Path.GetFileNameWithoutExtension(file);
                 var parts = filename.Split('_');
+
                 DateTime timestamp = DateTime.Now;
 
                 if (parts.Length == 2 &&
@@ -138,30 +187,39 @@ using (var scope = app.Services.CreateScope())
                 if (allValues.Count == 0)
                     continue;
 
-                string matrix = string.Join(",", allValues);
-                int peak = allValues.Max();
-
-                int threshold = 30;
-                double contactPct = (allValues.Count(v => v > threshold) / (double)allValues.Count) * 100.0;
-
                 db.SensorData.Add(new SensorData
                 {
                     Patient_ID = patient.Patient_ID,
                     TimeStamp = timestamp,
-                    Pressure_Matrix = matrix,
-                    PeakPressureIndex = peak,
-                    Contact_Area = $"{contactPct:F1}%"
+                    Pressure_Matrix = string.Join(",", allValues),
+                    PeakPressureIndex = allValues.Max(),
+                    Contact_Area = $"{(allValues.Count(v => v > 30) / (double)allValues.Count * 100.0):F1}%"
                 });
             }
 
             await db.SaveChangesAsync();
         }
     }
+ 
+    // SYSTEM SETTINGS
+    if (!db.SystemSettings.Any())
+    {
+        db.SystemSettings.Add(new SystemSetting
+        {
+            Theme = "light",
+            EmailAlerts = false,
+            AnomalyAlerts = false,
+            RefreshRate = "10",
+            Timezone = "UTC"
+        });
+
+        await db.SaveChangesAsync();
+    }
 }
 
+// ROUTING
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
-

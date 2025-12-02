@@ -1,0 +1,35 @@
+﻿@model IEnumerable<Software_Engineering_Final_Project_Team_Primal_Animals.ViewModels.ClinicianViewModel>
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-success">Clinicians</h2>
+        <a class="btn btn-secondary" asp-action="AdminDashboard">Back</a>
+    </div>
+
+    <div class="card p-4 shadow-sm">
+
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Email</th>
+                    <th>Source</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td>@c.Email</td>
+                        <td>@(c.Source ?? "Internal")</td>
+                        <td>@(c.CreatedAt?.ToString("dd-MM-yyyy") ?? "N/A")</td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+    </div>
+</div>

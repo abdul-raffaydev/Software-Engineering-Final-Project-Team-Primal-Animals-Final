@@ -27,9 +27,7 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             _context = context;
         }
 
-        // =========================
         // LOGIN
-        // =========================
         [HttpGet]
         public IActionResult Login(string returnUrl = null)
         {
@@ -62,9 +60,7 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             return View(model);
         }
 
-        // =========================
         // LOGOUT
-        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -73,9 +69,7 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             return RedirectToAction("Login");
         }
 
-        // =========================
         // REGISTER
-        // =========================
         [HttpGet]
         public IActionResult Register()
         {
@@ -143,9 +137,7 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             return View(model);
         }
 
-        // =========================
         // FORGOT PASSWORD
-        // =========================
         [HttpGet]
         public IActionResult ForgotPassword()
         {
@@ -179,9 +171,7 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             return View("ForgotPasswordConfirmation");
         }
 
-        // =========================
         // RESET PASSWORD
-        // =========================
         [HttpGet]
         public IActionResult ResetPassword(string userId, string token)
         {
@@ -220,9 +210,7 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             return View();
         }
 
-        // =========================
-        // ACCOUNT SETTINGS (PATIENT)
-        // =========================
+        // ACCOUNT SETTINGS FOR PATIENTS
         [Authorize(Roles = "Patient")]
         [HttpGet]
         public async Task<IActionResult> Settings()

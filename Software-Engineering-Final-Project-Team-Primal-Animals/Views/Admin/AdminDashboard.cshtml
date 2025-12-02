@@ -1,0 +1,73 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container py-5">
+
+    <h2 class="fw-bold text-center text-success mb-4">Admin Dashboard</h2>
+
+    <div class="dashboard-grid">
+
+        <a asp-action="UserManagement" class="dash-card">
+            <div class="dash-inner">
+                <h5 class="fw-bold mb-1">User Management</h5>
+                <p class="text-muted small">Manage system users</p>
+            </div>
+        </a>
+
+        <a asp-action="Patients" class="dash-card">
+            <div class="dash-inner">
+                <h5 class="fw-bold mb-1">Patients</h5>
+                <p class="text-muted small">View patient sensor data</p>
+            </div>
+        </a>
+
+        <a asp-action="Clinicians" class="dash-card">
+            <div class="dash-inner">
+                <h5 class="fw-bold mb-1">Clinicians</h5>
+                <p class="text-muted small">Manage clinical accounts</p>
+            </div>
+        </a>
+
+        <a asp-action="SystemSettings" class="dash-card">
+            <div class="dash-inner">
+                <h5 class="fw-bold mb-1">System Settings</h5>
+                <p class="text-muted small">System preferences & tools</p>
+            </div>
+        </a>
+
+    </div>
+
+</div>
+
+<style>
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+    }
+
+    .dash-card {
+        text-decoration: none;
+        background: white;
+        border-radius: 18px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.25s ease-in-out;
+        text-align: center;
+        border: 1px solid #e5e5e5;
+        color: inherit;
+    }
+
+        .dash-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+            background: #eef7ff;
+            border-color: #007bff;
+        }
+
+    .dash-inner p {
+        margin: 0;
+    }
+</style>

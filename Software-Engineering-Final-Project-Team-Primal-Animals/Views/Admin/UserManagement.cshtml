@@ -1,0 +1,127 @@
+﻿@model IEnumerable<Software_Engineering_Final_Project_Team_Primal_Animals.ViewModels.AdminUserViewModel>
+
+<div class="container mt-4">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary">User Management</h2>
+        <a class="btn btn-secondary" asp-action="AdminDashboard">Back</a>
+    </div>
+
+    <!-- ERROR / SUCCESS MESSAGES -->
+    @if (TempData["error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["error"]</div>
+    }
+
+    @if (TempData["success"] != null)
+    {
+        <div class="alert alert-success">@TempData["success"]</div>
+    }
+
+
+    <!-- CREATE USER FORM -->
+    <div class="card p-4 shadow-sm mb-4">
+
+        <form asp-action="CreateUser" method="post">
+
+            <div class="row mb-3">
+                <div class="col-md-4 mb-3">
+                    <label class="fw-bold">Name</label>
+                    <input name="name" class="form-control" required />
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="fw-bold">Email</label>
+                    <input name="email" type="email" class="form-control" required />
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="fw-bold">Password</label>
+                    <div class="input-group">
+                        <input id="passwordField" name="password" type="password" class="form-control" required />
+                        <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">Show</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROLE SELECTION -->
+            <label class="fw-bold">Role</label>
+            <div class="mb-3">
+                <label class="me-3"><input type="radio" name="role" value="Admin" required /> Admin</label>
+                <label class="me-3"><input type="radio" name="role" value="Clinical" /> Clinical</label>
+                <label><input type="radio" name="role" value="Patient" /> Patient</label>
+            </div>
+
+            <!-- SUBMIT -->
+            <button class="btn btn-primary w-100 fw-bold">Create User</button>
+
+        </form>
+
+    </div>
+
+    <!-- EXISTING USERS -->
+    <div class="card p-4 shadow-sm">
+
+        <h4 class="fw-bold mb-3">Existing Users</h4>
+
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var u in Model)
+                {
+                    <tr>
+                        <td>@u.FullName</td>
+                        <td>@u.Email</td>
+                        <td>@u.Role</td>
+
+                        <td class="text-end">
+
+                            <!-- RESET PASSWORD -->
+                            <a asp-action="ResetPassword"
+                               asp-route-id="@u.Id"
+                               class="btn btn-warning btn-sm me-2">
+                                Reset Password
+                            </a>
+
+                            <!-- DELETE USER -->
+                            <form asp-action="DeleteUser" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@u.Id" />
+                                <button class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Are you sure you want to delete this user?');">
+                                    Delete
+                                </button>
+                            </form>
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+    function togglePassword() {
+        const field = document.getElementById("passwordField");
+        const btn = event.target;
+
+        if (field.type === "password") {
+            field.type = "text";
+            btn.innerText = "Hide";
+        } else {
+            field.type = "password";
+            btn.innerText = "Show";
+        }
+    }
+</script>
