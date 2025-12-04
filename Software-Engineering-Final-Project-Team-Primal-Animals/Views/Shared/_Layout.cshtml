@@ -79,9 +79,11 @@
                         <a class="nav-link dashboard-btn" asp-controller="Admin" asp-action="AdminDashboard">Admin Dashboard</a>
                     </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link dashboard-btn" asp-controller="Clinical" asp-action="Dashboard">Clinical Dashboard</a>
-                    </li>
+                    <a asp-controller="Clinician" asp-action="ClinicianDashboard" class="nav-link">
+                        Clinician Dashboard
+                    </a>
+
+                  
 
                     <li class="nav-item">
                         <a class="nav-link dashboard-btn" asp-controller="Patient" asp-action="Dashboard">Patient Dashboard</a>

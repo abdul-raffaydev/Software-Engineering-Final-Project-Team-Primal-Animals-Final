@@ -1,0 +1,530 @@
+﻿@model Software_Engineering_Final_Project_Team_Primal_Animals.ViewModels.PatientDetailsVM
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Clinician Individual Patient Details";
+    string lastFrameLabel = Model.Frames.Any()
+        ? Model.Frames.Last().Timestamp.ToString()
+        : "N/A";
+}
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    .card-app {
+        width: 100%;
+        max-width: 980px;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 6px 18px rgba(18,38,63,0.12);
+        padding: 26px;
+        margin: 15px auto;
+    }
+
+    .heatmap-container {
+        position: relative;
+        height: 320px;
+        border-radius: 10px;
+    }
+
+    #heatmapCanvas {
+        width: 100%;
+        height: 320px;
+        border-radius: 10px;
+        background: #fff;
+        pointer-events: none;
+    }
+
+    .heatmap-loader {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba(255,255,255,0.7);
+        border-radius: 10px;
+        display: none;
+        opacity: 0;
+        z-index: 50;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        transition: opacity .25s ease;
+    }
+
+        .heatmap-loader.show {
+            display: flex;
+            opacity: 1;
+        }
+
+    .chart-box {
+        height: 68px;
+    }
+
+    .metric-label {
+        font-weight: 600;
+        color: #2d4963;
+    }
+
+    .metric-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0b66a0;
+    }
+
+    .comment-bubble {
+        background: #f1f6fb;
+        padding: 10px 12px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+    }
+
+    @@media (max-width: 768px) {
+        #heatmapCanvas {
+            height: 220px;
+        }
+
+        .heatmap-loader {
+            height: 220px;
+        }
+    }
+</style>
+
+<div class="card-app">
+
+    <!-- HEADER -->
+    <div class="d-flex align-items-center mb-3">
+        <a class="btn btn-sm btn-light me-3" href="javascript:history.back()">← Back</a>
+
+        <div class="flex-grow-1">
+            <div style="font-size:24px;font-weight:700;color:#0b3b66;">Clinician Individual Patient Details</div>
+            <div style="font-size:14px;color:#6b7b8f">
+                Viewing: <strong>@Model.PatientName</strong>
+            </div>
+        </div>
+
+        <a class="btn btn-outline-primary" href="/Account/Logout">Logout</a>
+    </div>
+
+
+    <div class="row g-3">
+
+        <!-- ===========================
+             LEFT SECTION (Heatmap)
+        ============================ -->
+        <div class="col-md-7">
+
+            <div class="metric-label mb-2">Live Heat Map</div>
+
+            <div class="heatmap-container">
+                <canvas id="heatmapCanvas"></canvas>
+
+                <div id="heatmapLoader" class="heatmap-loader">
+                    <div class="spinner-border text-primary" style="width:2rem;height:2rem;"></div>
+                    <div class="mt-2 small text-primary">Loading frame...</div>
+                </div>
+            </div>
+
+            <!-- Timeline / Frame Slider -->
+            <div class="mt-3 d-flex justify-content-between align-items-center">
+
+                <div class="d-flex align-items-center gap-2">
+                    <span>Frames:</span>
+                    <input type="range"
+                           id="frameRange"
+                           min="0"
+                           max="@(Model.Frames.Count > 0 ? Model.Frames.Count - 1 : 0)"
+                           value="@(Model.Frames.Count > 0 ? Model.Frames.Count - 1 : 0)" />
+                    <span id="frameLabel">Frame: @lastFrameLabel</span>
+                </div>
+
+                <div class="btn-group">
+                    <button id="btn1h" class="btn btn-sm btn-outline-secondary">1h</button>
+                    <button id="btn6h" class="btn btn-sm btn-outline-secondary">6h</button>
+                    <button id="btn24h" class="btn btn-sm btn-outline-secondary active">24h</button>
+                    <button id="btn7d" class="btn btn-sm btn-outline-secondary">7d</button>
+                </div>
+            </div>
+
+            <!-- Report -->
+            <div class="mt-3">
+                <button id="btnReport" class="btn btn-sm btn-primary">Generate Simple Report</button>
+                <div id="reportArea" class="mt-2"></div>
+            </div>
+
+        </div>
+
+
+        <!-- ===========================
+             RIGHT SECTION (Charts & Comments)
+        ============================ -->
+        <div class="col-md-5">
+
+            <!-- Peak Pressure Chart -->
+            <div class="p-2 small-chart mb-3">
+                <div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <div class="metric-label">
+                            Peak Pressure Index<br>
+                            <small class="text-muted">@Model.PeakPressureIndex</small>
+                        </div>
+                        <div class="metric-value">@Model.PeakPressureIndex</div>
+                    </div>
+
+                    <div class="chart-box">
+                        <canvas id="peakChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Area Chart -->
+            <div class="p-2 small-chart mb-3">
+                <div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <div class="metric-label">
+                            Percentage Contact Area<br>
+                            <small class="text-muted">@Model.ContactArea</small>
+                        </div>
+                        <div class="metric-value">@Model.ContactArea</div>
+                    </div>
+
+                    <div class="chart-box">
+                        <canvas id="contactChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Threshold Setting -->
+            <div class="mb-3">
+                <h6>Threshold (High Pressure)</h6>
+
+                <form id="thresholdForm">
+                    @Html.AntiForgeryToken()
+
+                    <div class="input-group">
+                        <input id="thresholdValue" type="number"
+                               class="form-control"
+                               value="@Model.HighPressureThreshold" />
+                        <button class="btn btn-outline-primary" type="submit">Save</button>
+                    </div>
+                </form>
+
+                <div id="thresholdMsg" class="small text-muted mt-1"></div>
+            </div>
+
+            <!-- Comments -->
+            <div>
+                <h6>Comments</h6>
+
+                <div id="commentsList">
+                    @foreach (var c in Model.Comments)
+                    {
+                    <div class="comment-bubble">
+                        <div class="small text-muted">@c.Author (@c.CommentTime.ToLocalTime())</div>
+                        <div>@c.Content</div>
+                    </div>
+                    }
+                </div>
+
+                <form id="commentForm" class="mt-2">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" id="commentDataId"
+                           value="@(Model.Frames.LastOrDefault()?.DataId ?? 0)" />
+
+                    <textarea id="commentText" class="form-control" rows="3"
+                              placeholder="Write a comment..."></textarea>
+
+                    <button class="btn btn-primary btn-sm mt-2" type="submit">Post Comment</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ===========================
+      JAVASCRIPT SECTION
+=========================== -->
+<script>
+    const patientId = @Model.PatientId;
+    let frames = JSON.parse('@Html.Raw(JsonSerializer.Serialize(Model.Frames))');
+    let currentFrameIndex = frames.length ? frames.length - 1 : 0;
+
+    const initialHeatmap = JSON.parse('@Html.Raw(Model.HeatmapJson ?? "[]")');
+    const peakSeries = JSON.parse('@Html.Raw(JsonSerializer.Serialize(Model.PeakPressureSeries))');
+    const contactSeries = JSON.parse('@Html.Raw(JsonSerializer.Serialize(Model.ContactAreaSeries))');
+
+    /////// HEATMAP DRAWING ///////
+    function drawHeatmap(matrix) {
+        const canvas = document.getElementById("heatmapCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * window.devicePixelRatio;
+        canvas.height = rect.height * window.devicePixelRatio;
+
+        ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+        ctx.clearRect(0, 0, rect.width, rect.height);
+
+        if (!matrix || !matrix.length) return;
+
+        const rows = matrix.length;
+        const cols = matrix[0].length;
+
+        const cellW = rect.width / cols;
+        const cellH = rect.height / rows;
+
+        let maxVal = 1;
+        matrix.forEach(r => r.forEach(v => maxVal = Math.max(maxVal, v)));
+
+        function getColor(value) {
+            const n = value / maxVal;
+            if (n < 0.4) return "rgb(255,200,60)";
+            if (n < 0.8) return "rgb(255,120,40)";
+            return "rgb(200,50,20)";
+        }
+
+        for (let r = 0; r < rows; r++)
+            for (let c = 0; c < cols; c++) {
+                ctx.fillStyle = getColor(matrix[r][c]);
+                ctx.fillRect(c * cellW, r * cellH, cellW, cellH);
+            }
+    }
+
+    /////// FRAME LOADING ///////
+    async function loadFrameByIndex(index) {
+        const loader = document.getElementById("heatmapLoader");
+        loader.classList.add("show");
+
+        try {
+            if (frames.length === 0) return;
+
+            index = Math.max(0, Math.min(index, frames.length - 1));
+            const frame = frames[index];
+
+            const resp = await fetch(`/Clinician/GetPatientFrame?patientId=${patientId}&dataId=${frame.DataId}`);
+            if (!resp.ok) return;
+
+            const json = await resp.json();
+
+            document.getElementById("frameLabel").textContent =
+                `Frame: ${new Date(json.Timestamp).toLocaleString()}`;
+            document.getElementById("commentDataId").value = json.DataId;
+
+            drawHeatmap(json.Matrix);
+        }
+        finally {
+            setTimeout(() => loader.classList.remove("show"), 200);
+        }
+    }
+
+    /////// LINE CHARTS ///////
+    let peakChart, contactChart;
+
+    function buildCharts(peakSeries, contactSeries) {
+        const opts = {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 3,
+            plugins: { legend: { display: false } },
+            elements: { point: { radius: 0 } }
+        };
+
+        // Peak Pressure Chart
+        const peakCtx = document.getElementById("peakChart").getContext("2d");
+
+        if (peakChart) peakChart.destroy();
+        peakChart = new Chart(peakCtx, {
+            type: "line",
+            data: {
+                labels: peakSeries.map(x => new Date(x.time).toLocaleTimeString()),
+                datasets: [{ data: peakSeries.map(x => x.value), fill: true, tension: 0.3 }]
+            },
+            options: opts
+        });
+
+        // Contact Area Chart
+        const contactCtx = document.getElementById("contactChart").getContext("2d");
+
+        if (contactChart) contactChart.destroy();
+        contactChart = new Chart(contactCtx, {
+            type: "line",
+            data: {
+                labels: contactSeries.map(x => new Date(x.time).toLocaleTimeString()),
+                datasets: [{ data: contactSeries.map(x => x.value), fill: true, tension: 0.3 }]
+            },
+            options: opts
+        });
+    }
+
+
+    /////// INIT PAGE ///////
+    (function init() {
+        drawHeatmap(initialHeatmap);
+        buildCharts(peakSeries, contactSeries);
+
+        // Slider
+        const range = document.getElementById("frameRange");
+        range.addEventListener("input", e => {
+            currentFrameIndex = Number(e.target.value);
+            loadFrameByIndex(currentFrameIndex);
+        });
+
+        // Time filters
+        document.getElementById("btn1h").onclick = () => loadTimeSeries("1h");
+        document.getElementById("btn6h").onclick = () => loadTimeSeries("6h");
+        document.getElementById("btn24h").onclick = () => loadTimeSeries("24h");
+        document.getElementById("btn7d").onclick = () => loadTimeSeries("7d");
+
+        // Comment posting
+        document.getElementById("commentForm").addEventListener("submit", submitComment);
+
+        // Threshold save
+        document.getElementById("thresholdForm").addEventListener("submit", saveThreshold);
+
+        // Report button
+        document.getElementById("btnReport").onclick = generateReport;
+    })();
+
+
+    /////// LOAD TIME SERIES ///////
+    async function loadTimeSeries(period) {
+        const resp = await fetch(`/Clinician/GetPatientTimeSeries?patientId=${patientId}&period=${period}`);
+        if (!resp.ok) return;
+
+        const data = await resp.json();
+
+        const peak = data.map(x => ({ time: x.time, value: x.peak }));
+        const contact = data.map(x => ({ time: x.time, value: x.contact }));
+
+        buildCharts(peak, contact);
+    }
+
+
+    /////// SAVE THRESHOLD ///////
+    async function saveThreshold(ev) {
+        ev.preventDefault();
+
+        const threshold = Number(document.getElementById("thresholdValue").value);
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        const resp = await fetch("/Clinician/UpdateThreshold", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                patientId,
+                threshold,
+                __RequestVerificationToken: token
+            })
+        });
+
+        if (!resp.ok) {
+            document.getElementById("thresholdMsg").textContent = "Save failed.";
+            return;
+        }
+
+        const json = await resp.json();
+        document.getElementById("thresholdMsg").textContent =
+            `Saved threshold: ${json.HighPressureThreshold}`;
+    }
+
+
+    /////// SUBMIT COMMENT ///////
+    async function submitComment(ev) {
+        ev.preventDefault();
+
+        const text = document.getElementById("commentText").value.trim();
+        if (!text) return alert("Enter a comment.");
+
+        const dataId = Number(document.getElementById("commentDataId").value);
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        const resp = await fetch("/Clinician/PostComment", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                patientId,
+                dataId,
+                content: text,
+                __RequestVerificationToken: token
+            })
+        });
+
+        if (!resp.ok) return;
+
+        const json = await resp.json();
+        const content =
+            json.Content ?? json.content ?? text;
+
+        const time =
+            json.CommentTime ?? json.commentTime ?? new Date();
+
+        // Add comment to list
+        const bubble = document.createElement("div");
+        bubble.className = "comment-bubble";
+        bubble.innerHTML = `
+            <div class="small text-muted">You (${new Date(time).toLocaleString()})</div>
+            <div>${content}</div>
+        `;
+
+        document.getElementById("commentsList").prepend(bubble);
+        document.getElementById("commentText").value = "";
+    }
+
+
+    /////// GENERATE SIMPLE REPORT ///////
+    async function generateReport() {
+
+        const now = new Date();
+
+        // ----- Last 24h -----
+        const r24 = await fetch(`/Clinician/GetPatientTimeSeries?patientId=${patientId}&period=24h`)
+            .then(r => r.json())
+            .catch(() => []);
+
+        // ----- Entire 7 days -----
+        const all = await fetch(`/Clinician/GetPatientTimeSeries?patientId=${patientId}&period=7d`)
+            .then(r => r.json())
+            .catch(() => []);
+
+        if (!Array.isArray(r24) || !Array.isArray(all)) {
+            document.getElementById("reportArea").innerHTML =
+                `<div class="alert alert-danger">Unable to generate report.</div>`;
+            return;
+        }
+
+        const prev24Start = new Date(now.getTime() - 48 * 3600 * 1000);
+        const prev24End = new Date(now.getTime() - 24 * 3600 * 1000);
+
+        const prev = all.filter(x => {
+            const t = new Date(x.time);
+            return t >= prev24Start && t <= prev24End;
+        });
+
+        function safeAvg(arr, key) {
+            if (!arr || arr.length === 0) return 0;
+            return arr.reduce((sum, x) => sum + (x[key] || 0), 0) / arr.length;
+        }
+
+        const latestAvgPeak = safeAvg(r24, "peak");
+        const prevAvgPeak = safeAvg(prev, "peak");
+
+        const latestAvgContact = safeAvg(r24, "contact");
+        const prevAvgContact = safeAvg(prev, "contact");
+
+        document.getElementById("reportArea").innerHTML = `
+            <div class="card p-3">
+                <strong>Simple Pressure Report</strong><br>
+                <div>Avg Peak (last 24h): <b>${latestAvgPeak.toFixed(1)}</b></div>
+                <div>Avg Peak (prev 24h): <b>${prevAvgPeak.toFixed(1)}</b></div>
+                <hr>
+                <div>Avg Contact % (last 24h): <b>${latestAvgContact.toFixed(1)}%</b></div>
+                <div>Avg Contact % (prev 24h): <b>${prevAvgContact.toFixed(1)}%</b></div>
+            </div>`;
+    }
+
+</script>
