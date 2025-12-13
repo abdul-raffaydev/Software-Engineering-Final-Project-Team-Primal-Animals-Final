@@ -3,8 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using Software_Engineering_Final_Project_Team_Primal_Animals.Data;
 using Software_Engineering_Final_Project_Team_Primal_Animals.Models;
 using System.Globalization;
+using QuestPDF.Infrastructure;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+// For quest pdf
+QuestPDF.Settings.License = LicenseType.Community;
+
 
 // MVC
 builder.Services.AddControllersWithViews();

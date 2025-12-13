@@ -7,9 +7,25 @@
         : "N/A";
 }
 
-<link rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="/css/bootstrap.min.css" />
+
+<script src="/js/chart.js"></script>
+
+<script src="/js/patientdetails.js"></script>
+
+<script>
+    const patientId = @Model.PatientId;
+    let frames = JSON.parse('@Html.Raw(JsonSerializer.Serialize(Model.Frames))');
+    let currentFrameIndex = frames.length ? frames.length - 1 : 0;
+
+    const initialHeatmap = JSON.parse('@Html.Raw(Model.HeatmapJson ?? "[]")');
+    const peakSeries = JSON.parse('@Html.Raw(JsonSerializer.Serialize(Model.PeakPressureSeries))');
+    const contactSeries = JSON.parse('@Html.Raw(JsonSerializer.Serialize(Model.ContactAreaSeries))');
+
+    document.addEventListener("DOMContentLoaded", initPatientDetailsPage);
+</script>
+
+
 
 <style>
     .card-app {
@@ -135,7 +151,9 @@
                            id="frameRange"
                            min="0"
                            max="@(Model.Frames.Count > 0 ? Model.Frames.Count - 1 : 0)"
+                           step="1"
                            value="@(Model.Frames.Count > 0 ? Model.Frames.Count - 1 : 0)" />
+
                     <span id="frameLabel">Frame: @lastFrameLabel</span>
                 </div>
 
@@ -219,12 +237,15 @@
 
                 <div id="commentsList">
                     @foreach (var c in Model.Comments)
-                    {
+    {
                     <div class="comment-bubble">
-                        <div class="small text-muted">@c.Author (@c.CommentTime.ToLocalTime())</div>
+                        <div class="small text-muted">
+                            @(c.Author == "You" ? "You" : Model.PatientName)
+                            (@c.CommentTime.ToLocalTime())
+                        </div>
                         <div>@c.Content</div>
                     </div>
-                    }
+    }
                 </div>
 
                 <form id="commentForm" class="mt-2">
@@ -246,285 +267,3 @@
 </div>
 
 
-<!-- ===========================
-      JAVASCRIPT SECTION
-=========================== -->
-<script>
-    const patientId = @Model.PatientId;
-    let frames = JSON.parse('@Html.Raw(JsonSerializer.Serialize(Model.Frames))');
-    let currentFrameIndex = frames.length ? frames.length - 1 : 0;
-
-    const initialHeatmap = JSON.parse('@Html.Raw(Model.HeatmapJson ?? "[]")');
-    const peakSeries = JSON.parse('@Html.Raw(JsonSerializer.Serialize(Model.PeakPressureSeries))');
-    const contactSeries = JSON.parse('@Html.Raw(JsonSerializer.Serialize(Model.ContactAreaSeries))');
-
-    /////// HEATMAP DRAWING ///////
-    function drawHeatmap(matrix) {
-        const canvas = document.getElementById("heatmapCanvas");
-        const ctx = canvas.getContext("2d");
-
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * window.devicePixelRatio;
-        canvas.height = rect.height * window.devicePixelRatio;
-
-        ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
-        ctx.clearRect(0, 0, rect.width, rect.height);
-
-        if (!matrix || !matrix.length) return;
-
-        const rows = matrix.length;
-        const cols = matrix[0].length;
-
-        const cellW = rect.width / cols;
-        const cellH = rect.height / rows;
-
-        let maxVal = 1;
-        matrix.forEach(r => r.forEach(v => maxVal = Math.max(maxVal, v)));
-
-        function getColor(value) {
-            const n = value / maxVal;
-            if (n < 0.4) return "rgb(255,200,60)";
-            if (n < 0.8) return "rgb(255,120,40)";
-            return "rgb(200,50,20)";
-        }
-
-        for (let r = 0; r < rows; r++)
-            for (let c = 0; c < cols; c++) {
-                ctx.fillStyle = getColor(matrix[r][c]);
-                ctx.fillRect(c * cellW, r * cellH, cellW, cellH);
-            }
-    }
-
-    /////// FRAME LOADING ///////
-    async function loadFrameByIndex(index) {
-        const loader = document.getElementById("heatmapLoader");
-        loader.classList.add("show");
-
-        try {
-            if (frames.length === 0) return;
-
-            index = Math.max(0, Math.min(index, frames.length - 1));
-            const frame = frames[index];
-
-            const resp = await fetch(`/Clinician/GetPatientFrame?patientId=${patientId}&dataId=${frame.DataId}`);
-            if (!resp.ok) return;
-
-            const json = await resp.json();
-
-            document.getElementById("frameLabel").textContent =
-                `Frame: ${new Date(json.Timestamp).toLocaleString()}`;
-            document.getElementById("commentDataId").value = json.DataId;
-
-            drawHeatmap(json.Matrix);
-        }
-        finally {
-            setTimeout(() => loader.classList.remove("show"), 200);
-        }
-    }
-
-    /////// LINE CHARTS ///////
-    let peakChart, contactChart;
-
-    function buildCharts(peakSeries, contactSeries) {
-        const opts = {
-            responsive: true,
-            maintainAspectRatio: true,
-            aspectRatio: 3,
-            plugins: { legend: { display: false } },
-            elements: { point: { radius: 0 } }
-        };
-
-        // Peak Pressure Chart
-        const peakCtx = document.getElementById("peakChart").getContext("2d");
-
-        if (peakChart) peakChart.destroy();
-        peakChart = new Chart(peakCtx, {
-            type: "line",
-            data: {
-                labels: peakSeries.map(x => new Date(x.time).toLocaleTimeString()),
-                datasets: [{ data: peakSeries.map(x => x.value), fill: true, tension: 0.3 }]
-            },
-            options: opts
-        });
-
-        // Contact Area Chart
-        const contactCtx = document.getElementById("contactChart").getContext("2d");
-
-        if (contactChart) contactChart.destroy();
-        contactChart = new Chart(contactCtx, {
-            type: "line",
-            data: {
-                labels: contactSeries.map(x => new Date(x.time).toLocaleTimeString()),
-                datasets: [{ data: contactSeries.map(x => x.value), fill: true, tension: 0.3 }]
-            },
-            options: opts
-        });
-    }
-
-
-    /////// INIT PAGE ///////
-    (function init() {
-        drawHeatmap(initialHeatmap);
-        buildCharts(peakSeries, contactSeries);
-
-        // Slider
-        const range = document.getElementById("frameRange");
-        range.addEventListener("input", e => {
-            currentFrameIndex = Number(e.target.value);
-            loadFrameByIndex(currentFrameIndex);
-        });
-
-        // Time filters
-        document.getElementById("btn1h").onclick = () => loadTimeSeries("1h");
-        document.getElementById("btn6h").onclick = () => loadTimeSeries("6h");
-        document.getElementById("btn24h").onclick = () => loadTimeSeries("24h");
-        document.getElementById("btn7d").onclick = () => loadTimeSeries("7d");
-
-        // Comment posting
-        document.getElementById("commentForm").addEventListener("submit", submitComment);
-
-        // Threshold save
-        document.getElementById("thresholdForm").addEventListener("submit", saveThreshold);
-
-        // Report button
-        document.getElementById("btnReport").onclick = generateReport;
-    })();
-
-
-    /////// LOAD TIME SERIES ///////
-    async function loadTimeSeries(period) {
-        const resp = await fetch(`/Clinician/GetPatientTimeSeries?patientId=${patientId}&period=${period}`);
-        if (!resp.ok) return;
-
-        const data = await resp.json();
-
-        const peak = data.map(x => ({ time: x.time, value: x.peak }));
-        const contact = data.map(x => ({ time: x.time, value: x.contact }));
-
-        buildCharts(peak, contact);
-    }
-
-
-    /////// SAVE THRESHOLD ///////
-    async function saveThreshold(ev) {
-        ev.preventDefault();
-
-        const threshold = Number(document.getElementById("thresholdValue").value);
-        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
-        const resp = await fetch("/Clinician/UpdateThreshold", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                patientId,
-                threshold,
-                __RequestVerificationToken: token
-            })
-        });
-
-        if (!resp.ok) {
-            document.getElementById("thresholdMsg").textContent = "Save failed.";
-            return;
-        }
-
-        const json = await resp.json();
-        document.getElementById("thresholdMsg").textContent =
-            `Saved threshold: ${json.HighPressureThreshold}`;
-    }
-
-
-    /////// SUBMIT COMMENT ///////
-    async function submitComment(ev) {
-        ev.preventDefault();
-
-        const text = document.getElementById("commentText").value.trim();
-        if (!text) return alert("Enter a comment.");
-
-        const dataId = Number(document.getElementById("commentDataId").value);
-        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
-        const resp = await fetch("/Clinician/PostComment", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                patientId,
-                dataId,
-                content: text,
-                __RequestVerificationToken: token
-            })
-        });
-
-        if (!resp.ok) return;
-
-        const json = await resp.json();
-        const content =
-            json.Content ?? json.content ?? text;
-
-        const time =
-            json.CommentTime ?? json.commentTime ?? new Date();
-
-        // Add comment to list
-        const bubble = document.createElement("div");
-        bubble.className = "comment-bubble";
-        bubble.innerHTML = `
-            <div class="small text-muted">You (${new Date(time).toLocaleString()})</div>
-            <div>${content}</div>
-        `;
-
-        document.getElementById("commentsList").prepend(bubble);
-        document.getElementById("commentText").value = "";
-    }
-
-
-    /////// GENERATE SIMPLE REPORT ///////
-    async function generateReport() {
-
-        const now = new Date();
-
-        // ----- Last 24h -----
-        const r24 = await fetch(`/Clinician/GetPatientTimeSeries?patientId=${patientId}&period=24h`)
-            .then(r => r.json())
-            .catch(() => []);
-
-        // ----- Entire 7 days -----
-        const all = await fetch(`/Clinician/GetPatientTimeSeries?patientId=${patientId}&period=7d`)
-            .then(r => r.json())
-            .catch(() => []);
-
-        if (!Array.isArray(r24) || !Array.isArray(all)) {
-            document.getElementById("reportArea").innerHTML =
-                `<div class="alert alert-danger">Unable to generate report.</div>`;
-            return;
-        }
-
-        const prev24Start = new Date(now.getTime() - 48 * 3600 * 1000);
-        const prev24End = new Date(now.getTime() - 24 * 3600 * 1000);
-
-        const prev = all.filter(x => {
-            const t = new Date(x.time);
-            return t >= prev24Start && t <= prev24End;
-        });
-
-        function safeAvg(arr, key) {
-            if (!arr || arr.length === 0) return 0;
-            return arr.reduce((sum, x) => sum + (x[key] || 0), 0) / arr.length;
-        }
-
-        const latestAvgPeak = safeAvg(r24, "peak");
-        const prevAvgPeak = safeAvg(prev, "peak");
-
-        const latestAvgContact = safeAvg(r24, "contact");
-        const prevAvgContact = safeAvg(prev, "contact");
-
-        document.getElementById("reportArea").innerHTML = `
-            <div class="card p-3">
-                <strong>Simple Pressure Report</strong><br>
-                <div>Avg Peak (last 24h): <b>${latestAvgPeak.toFixed(1)}</b></div>
-                <div>Avg Peak (prev 24h): <b>${prevAvgPeak.toFixed(1)}</b></div>
-                <hr>
-                <div>Avg Contact % (last 24h): <b>${latestAvgContact.toFixed(1)}%</b></div>
-                <div>Avg Contact % (prev 24h): <b>${prevAvgContact.toFixed(1)}%</b></div>
-            </div>`;
-    }
-
-</script>

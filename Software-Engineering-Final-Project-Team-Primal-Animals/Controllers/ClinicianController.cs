@@ -5,6 +5,10 @@ using Software_Engineering_Final_Project_Team_Primal_Animals.Data;
 using Software_Engineering_Final_Project_Team_Primal_Animals.Models;
 using Software_Engineering_Final_Project_Team_Primal_Animals.ViewModels;
 using System.Text.Json;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+using QuestPDF.Previewer;
 
 namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
 {
@@ -323,6 +327,123 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             {
                 HighPressureThreshold = threshold
             });
+        }
+
+        // ============================================================
+        // 8. FIXED: GENERATE PDF REPORT
+        // ============================================================
+        [HttpGet]
+        public IActionResult DownloadPatientReport(int patientId)
+        {
+            var patient = _context.Patients
+                .FirstOrDefault(p => p.Patient_ID == patientId);
+
+            if (patient == null)
+                return NotFound("Patient not found.");
+
+            int threshold = patient.HighPressureThreshold;
+
+            // ✔ LOAD REAL SENSOR DATA HERE
+            var data = _context.SensorData
+                .Where(x => x.Patient_ID == patientId)
+                .ToList();
+
+            double avgPeak = data.Any()
+                ? data.Average(x => x.PeakPressureIndex)
+                : 0;
+
+            double avgContact = data.Any()
+                ? data.Average(x =>
+                {
+                    double v;
+                    return double.TryParse(x.Contact_Area.Replace("%", ""), out v) ? v : 0;
+                })
+                : 0;
+
+            // Build PDF
+            byte[] pdf = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(20);
+                    page.Content().Column(col =>
+                    {
+                        col.Item().Text("Patient Report")
+                            .FontSize(22).Bold();
+
+                        col.Item().Text($"Patient Name: {patient.Full_Name}");
+                        col.Item().Text($"Generated: {DateTime.Now}");
+                        col.Item().LineHorizontal(1);
+
+                        col.Item().Text($"Average Peak Pressure (24h): {avgPeak:F1}");
+                        col.Item().Text($"Average Contact Area % (24h): {avgContact:F1}%");
+                        col.Item().Text($"Pressure Threshold: {threshold}");
+
+                        col.Item().LineHorizontal(1);
+                    });
+                });
+            }).GeneratePdf();
+
+            return File(pdf, "application/pdf", $"{patient.Full_Name}_Report.pdf");
+        }
+
+        // ============================================================
+        // 9. GENERATE DATE-RANGE PDF
+        // ============================================================
+        [HttpGet]
+        public IActionResult GeneratePdfReport(int patientId, DateTime from, DateTime to)
+        {
+            var patient = _context.Patients
+                .FirstOrDefault(p => p.Patient_ID == patientId);
+
+            if (patient == null)
+                return NotFound();
+
+            int threshold = patient.HighPressureThreshold;
+
+            var data = _context.SensorData
+                .Where(x => x.Patient_ID == patientId &&
+                            x.TimeStamp >= from &&
+                            x.TimeStamp <= to)
+                .ToList();
+
+            double avgPeak = data.Any()
+                ? data.Average(x => x.PeakPressureIndex)
+                : 0;
+
+            double avgContact = data.Any()
+                ? data.Average(x =>
+                {
+                    double v;
+                    return double.TryParse(x.Contact_Area.Replace("%", ""), out v) ? v : 0;
+                })
+                : 0;
+
+            byte[] pdf = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(20);
+
+                    page.Content().Column(col =>
+                    {
+                        col.Item().Text("Patient Report")
+                            .FontSize(22).Bold();
+
+                        col.Item().Text($"Name: {patient.Full_Name}");
+                        col.Item().Text($"Date Range: {from:G} → {to:G}");
+                        col.Item().LineHorizontal(1);
+
+                        col.Item().Text($"Average Peak Pressure Index: {avgPeak:F1}");
+                        col.Item().Text($"Average Contact Area %: {avgContact:F1}%");
+                        col.Item().Text($"High Pressure Threshold: {threshold}");
+
+                        col.Item().LineHorizontal(1);
+                    });
+                });
+            }).GeneratePdf();
+
+            return File(pdf, "application/pdf", $"{patient.Full_Name}_Report.pdf");
         }
     }
 }
