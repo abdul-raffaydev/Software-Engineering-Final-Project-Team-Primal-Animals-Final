@@ -12,7 +12,7 @@ using QuestPDF.Previewer;
 
 namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class ClinicianController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -161,11 +161,12 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
                 .OrderByDescending(c => c.Comment_Time)
                 .Select(c => new CommentVM
                 {
-                    Author = "Clinician",
+                     Author = c.AuthorRole,
                     Content = c.Content,
                     CommentTime = c.Comment_Time
                 })
-                .ToList();
+                 .ToList();
+
 
             var vm = new PatientDetailsVM
             {
@@ -295,7 +296,8 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
                 Patient_ID = patientId,
                 Data_ID = dataId,
                 Content = content,
-                Comment_Time = DateTime.UtcNow
+                Comment_Time = DateTime.UtcNow,
+                AuthorRole = "Clinician"
             };
 
             _context.CommentThreads.Add(comment);
@@ -325,8 +327,9 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
 
             return Json(new
             {
-                HighPressureThreshold = threshold
+                highPressureThreshold = threshold
             });
+
         }
 
         // ============================================================

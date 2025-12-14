@@ -27,15 +27,22 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             _context = context;
         }
 
-        // LOGIN
+        // =========================
+        // LOGIN (GET)
+        // =========================
         [HttpGet]
-        public IActionResult Login(string returnUrl = null)
+        [AllowAnonymous]
+        public IActionResult Login(string? returnUrl = null)
         {
-            ViewBag.ReturnUrl = returnUrl;
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
+        // =========================
+        // LOGIN (POST) ✅ FIXED
+        // =========================
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
@@ -48,19 +55,32 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
                 model.RememberMe,
                 lockoutOnFailure: false);
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                    return Redirect(returnUrl);
-
-                return RedirectToAction("Dashboard", "Patient");
+                ModelState.AddModelError("", "Invalid login attempt.");
+                return View(model);
             }
 
-            ModelState.AddModelError("", "Invalid login attempt.");
-            return View(model);
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            // ✅ ROLE-BASED REDIRECTION (CORRECT & SAFE)
+
+            if (await _userManager.IsInRoleAsync(user, "Clinician"))
+                return RedirectToAction("ClinicianDashboard", "Clinician");
+
+            if (await _userManager.IsInRoleAsync(user, "Patient"))
+                return RedirectToAction("Dashboard", "Patient");
+
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+                return RedirectToAction("AdminDashboard", "Admin");
+
+            // fallback
+            return RedirectToAction("Index", "Home");
         }
 
+        // =========================
         // LOGOUT
+        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -69,7 +89,9 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             return RedirectToAction("Login");
         }
 
+        // =========================
         // REGISTER
+        // =========================
         [HttpGet]
         public IActionResult Register()
         {
@@ -83,7 +105,6 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // 1) Create Identity user
             var user = new ApplicationUser
             {
                 UserName = model.Email,
@@ -93,145 +114,61 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
 
             var result = await _userManager.CreateAsync(user, model.Password);
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                // Ensure Patient role exists
-                if (!await _userManager.IsInRoleAsync(user, "Patient"))
-                {
-                    var roleManager = HttpContext.RequestServices.GetService(typeof(RoleManager<IdentityRole>)) as RoleManager<IdentityRole>;
-                    if (roleManager != null && !await roleManager.RoleExistsAsync("Patient"))
-                    {
-                        await roleManager.CreateAsync(new IdentityRole("Patient"));
-                    }
+                foreach (var error in result.Errors)
+                    ModelState.AddModelError("", error.Description);
 
-                    await _userManager.AddToRoleAsync(user, "Patient");
-                }
-
-                // 2) Create linked Patient profile
-                var age = DateTime.Now.Year - model.DateOfBirth.Year;
-                if (model.DateOfBirth.Date > DateTime.Now.AddYears(-age)) age--;
-
-                var random = new Random();
-
-                var patient = new Patient
-                {
-                    Full_Name = user.Full_Name,
-                    DateOfBirth = model.DateOfBirth.ToString("yyyy-MM-dd"),
-                    Age = age.ToString(),
-                    Emergency_contactName = $"{model.FirstName} Emergency",
-                    Emergency_ContactNumber = random.Next(300000000, 999999999),
-                    AppUserId = user.Id,
-                    HighPressureThreshold = 180
-                };
-
-                _context.Patients.Add(patient);
-                await _context.SaveChangesAsync();
-
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                return RedirectToAction("Dashboard", "Patient");
+                return View(model);
             }
 
-            foreach (var error in result.Errors)
-                ModelState.AddModelError("", error.Description);
+            await _userManager.AddToRoleAsync(user, "Patient");
 
-            return View(model);
-        }
+            var age = DateTime.Now.Year - model.DateOfBirth.Year;
+            if (model.DateOfBirth.Date > DateTime.Now.AddYears(-age)) age--;
 
-        // FORGOT PASSWORD
-        [HttpGet]
-        public IActionResult ForgotPassword()
-        {
-            return View();
-        }
+            var random = new Random();
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ForgotPassword(string email)
-        {
-            if (string.IsNullOrWhiteSpace(email))
+            var patient = new Patient
             {
-                ViewBag.Error = "Please enter your email.";
-                return View();
-            }
+                Full_Name = user.Full_Name,
+                DateOfBirth = model.DateOfBirth.ToString("yyyy-MM-dd"),
+                Age = age.ToString(),
+                Emergency_contactName = $"{model.FirstName} Emergency",
+                Emergency_ContactNumber = random.Next(300000000, 999999999),
+                AppUserId = user.Id,
+                HighPressureThreshold = 180
+            };
 
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null)
-            {
-                ViewBag.Error = "User not found.";
-                return View();
-            }
+            _context.Patients.Add(patient);
+            await _context.SaveChangesAsync();
 
-            // Generate reset token
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-            // For development: show token directly
-            ViewBag.Token = token;
-            ViewBag.UserId = user.Id;
-
-            return View("ForgotPasswordConfirmation");
+            await _signInManager.SignInAsync(user, false);
+            return RedirectToAction("Dashboard", "Patient");
         }
 
-        // RESET PASSWORD
-        [HttpGet]
-        public IActionResult ResetPassword(string userId, string token)
-        {
-            ViewBag.UserId = userId;
-            ViewBag.Token = token;
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(string userId, string token, string newPassword, string confirmPassword)
-        {
-            if (newPassword != confirmPassword)
-            {
-                ViewBag.Error = "Passwords do not match.";
-                ViewBag.UserId = userId;
-                ViewBag.Token = token;
-                return View();
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                ViewBag.Error = "User not found.";
-                return View();
-            }
-
-            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
-
-            if (result.Succeeded)
-                return RedirectToAction("Login");
-
-            ViewBag.Error = "Invalid or expired token.";
-            ViewBag.UserId = userId;
-            ViewBag.Token = token;
-            return View();
-        }
-
-        // ACCOUNT SETTINGS FOR PATIENTS
+        // =========================
+        // PATIENT SETTINGS
+        // =========================
         [Authorize(Roles = "Patient")]
         [HttpGet]
         public async Task<IActionResult> Settings()
         {
-            string identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var patient = await _context.Patients
-                .FirstOrDefaultAsync(p => p.AppUserId == identityUserId);
+                .FirstOrDefaultAsync(p => p.AppUserId == userId);
 
             if (patient == null)
-                return NotFound("No patient profile found.");
+                return NotFound();
 
-            var vm = new AccountSettingsViewModel
+            return View(new AccountSettingsViewModel
             {
                 FullName = patient.Full_Name,
                 DateOfBirth = patient.DateOfBirth,
                 EmergencyContactName = patient.Emergency_contactName,
                 EmergencyContactNumber = patient.Emergency_ContactNumber.ToString()
-            };
-
-            return View(vm);
+            });
         }
 
         [Authorize(Roles = "Patient")]
@@ -242,15 +179,14 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            string identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var patient = await _context.Patients
-                .FirstOrDefaultAsync(p => p.AppUserId == identityUserId);
+                .FirstOrDefaultAsync(p => p.AppUserId == userId);
 
             if (patient == null)
-                return NotFound("No patient profile found.");
+                return NotFound();
 
-            // Update patient data
             patient.Full_Name = model.FullName;
             patient.DateOfBirth = model.DateOfBirth;
             patient.Emergency_contactName = model.EmergencyContactName;
@@ -265,4 +201,3 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Controllers
         }
     }
 }
-

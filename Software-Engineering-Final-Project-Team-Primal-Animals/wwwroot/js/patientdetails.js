@@ -257,10 +257,7 @@ function initPatientDetailsPage() {
         loadFrameByIndex(currentFrameIndex);
     });
 
-    document.getElementById("btn1h").onclick = () => loadTimeSeries("1h");
-    document.getElementById("btn6h").onclick = () => loadTimeSeries("6h");
-    document.getElementById("btn24h").onclick = () => loadTimeSeries("24h");
-    document.getElementById("btn7d").onclick = () => loadTimeSeries("7d");
+  
 
     document.getElementById("commentForm").addEventListener("submit", submitComment);
     document.getElementById("thresholdForm").addEventListener("submit", saveThreshold);

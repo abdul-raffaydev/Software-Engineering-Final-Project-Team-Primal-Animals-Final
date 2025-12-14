@@ -38,7 +38,9 @@ namespace Software_Engineering_Final_Project_Team_Primal_Animals.Data
 
             // COMMENTS PK
             builder.Entity<CommentThread>()
-                .HasKey(c => c.Comment_ID);
+                .HasKey(c => c.CommentThread_ID);
+
+
 
             // Patient ↔ IdentityUser (1-to-1)
             builder.Entity<Patient>()

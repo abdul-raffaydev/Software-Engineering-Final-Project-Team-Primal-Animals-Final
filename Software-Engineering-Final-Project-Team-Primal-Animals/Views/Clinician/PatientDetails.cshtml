@@ -28,15 +28,7 @@
 
 
 <style>
-    .card-app {
-        width: 100%;
-        max-width: 980px;
-        background: #fff;
-        border-radius: 18px;
-        box-shadow: 0 6px 18px rgba(18,38,63,0.12);
-        padding: 26px;
-        margin: 15px auto;
-    }
+
 
     .heatmap-container {
         position: relative;
@@ -75,7 +67,7 @@
         }
 
     .chart-box {
-        height: 68px;
+        height: 150px;
     }
 
     .metric-label {
@@ -107,7 +99,7 @@
     }
 </style>
 
-<div class="card-app">
+<div>
 
     <!-- HEADER -->
     <div class="d-flex align-items-center mb-3">
@@ -120,7 +112,9 @@
             </div>
         </div>
 
-        <a class="btn btn-outline-primary" href="/Account/Logout">Logout</a>
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            <button type="submit" class="btn btn-warning btn-sm ms-2">Logout</button>
+        </form>
     </div>
 
 
@@ -158,10 +152,7 @@
                 </div>
 
                 <div class="btn-group">
-                    <button id="btn1h" class="btn btn-sm btn-outline-secondary">1h</button>
-                    <button id="btn6h" class="btn btn-sm btn-outline-secondary">6h</button>
-                    <button id="btn24h" class="btn btn-sm btn-outline-secondary active">24h</button>
-                    <button id="btn7d" class="btn btn-sm btn-outline-secondary">7d</button>
+                  
                 </div>
             </div>
 
@@ -180,7 +171,7 @@
         <div class="col-md-5">
 
             <!-- Peak Pressure Chart -->
-            <div class="p-2 small-chart mb-3">
+            <div class="p-2 large-chart mb-3">
                 <div>
                     <div class="d-flex justify-content-between mb-1">
                         <div class="metric-label">
@@ -197,7 +188,7 @@
             </div>
 
             <!-- Contact Area Chart -->
-            <div class="p-2 small-chart mb-3">
+            <div class="p-2 large-chart mb-3">
                 <div>
                     <div class="d-flex justify-content-between mb-1">
                         <div class="metric-label">
@@ -237,16 +228,17 @@
 
                 <div id="commentsList">
                     @foreach (var c in Model.Comments)
-    {
+{
                     <div class="comment-bubble">
                         <div class="small text-muted">
-                            @(c.Author == "You" ? "You" : Model.PatientName)
+                            @(c.Author == "Clinician" ? "You" : Model.PatientName)
                             (@c.CommentTime.ToLocalTime())
                         </div>
                         <div>@c.Content</div>
                     </div>
-    }
+}
                 </div>
+
 
                 <form id="commentForm" class="mt-2">
                     @Html.AntiForgeryToken()
